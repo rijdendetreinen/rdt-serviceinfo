@@ -1,0 +1,9 @@
+---
+mysql:
+    host: localhost
+    user: user
+    password: pass
+    database: iff
+logging:
+    log_config: config/logging.yaml
+...
