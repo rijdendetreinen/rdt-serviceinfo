@@ -1,6 +1,6 @@
 import redis
-import arnu_ritinfo
 from datetime import datetime
+import serviceinfo.arnu
 
 #TODO
 from pprint import pprint
@@ -16,7 +16,7 @@ stop_counter = 0
 with open('/home/geert/arnulog/arnumessages.log', 'r') as f:
 #with open('/home/geert/arnulog/minitestset.log', 'r') as f:
 	for line in f:
-		services = arnu_ritinfo.parse_arnu_message(line)
+		services = serviceinfo.arnu.parse_arnu_message(line)
 		for service in services:
 			r.sadd('services', service.service_id)
 			#pprint (vars(service))

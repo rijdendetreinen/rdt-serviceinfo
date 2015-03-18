@@ -2,7 +2,7 @@
 
 """
 IFF/ARNU service scheduler
-Copyright (C) 2013-2015 Geert Wirken
+Copyright (C) 2015 Geert Wirken
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ import yaml
 import argparse
 import redis
 
-from iff_mysql import IffSource
+import serviceinfo.iff
 
 def setup_logging(default_path='logging.yaml',
     default_level=logging.INFO, env_key='LOG_CFG'):
@@ -76,7 +76,7 @@ def load_schedule():
     service_date = get_current_servicedate()
 
     logger.debug('Getting services for %s', service_date)
-    iff = IffSource(config['mysql'])
+    iff = serviceinfo.iff.IffSource(config['iff_database'])
     services = iff.get_services_date(service_date)
 
     logger.info('Found %s scheduled services on %s', len(services), service_date.strftime('%Y-%m-%d'))

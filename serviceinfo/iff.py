@@ -1,6 +1,8 @@
 import MySQLdb
-from arnu_ritinfo import ArnuService, ArnuStop
 import logging
+
+import data
+import util
 
 class IffSource(object):
     def __init__(self, config):
@@ -24,7 +26,7 @@ class IffSource(object):
 
 
     def get_service_details(self, service_id, service_date):
-        service = ArnuService()
+        service = data.Service()
 
         cursor = self.connection.cursor()
         cursor.execute("""
@@ -53,10 +55,10 @@ class IffSource(object):
         for row in cursor:
             service.service_id = row[1]
             
-            stop = ArnuStop(row[2].lower())
+            stop = data.ServiceStop(row[2].lower())
             stop.stop_name = row[3]
-            stop.arrival_time = parse_iff_time(service_date, row[4])
-            stop.departure_time = parse_iff_time(service_date, row[5])
+            stop.arrival_time = util.parse_sql_time(service_date, row[4])
+            stop.departure_time = util.parse_sql_time(service_date, row[5])
             stop.arrival_platform = row[6]
             stop.departure_platform = row[7]
 
@@ -77,10 +79,3 @@ class IffSource(object):
                 logger.warning('Skipping service %s', service_id)
 
         return services
-
-
-def parse_iff_time(service_date, time):
-    if time != None:
-        return service_date + time
-    else:
-        return time
