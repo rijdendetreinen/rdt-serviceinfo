@@ -29,6 +29,7 @@ import argparse
 import redis
 
 import serviceinfo.iff
+import serviceinfo.service_store
 
 def setup_logging(default_path='logging.yaml',
     default_level=logging.INFO, env_key='LOG_CFG'):
@@ -72,6 +73,8 @@ def get_current_servicedate():
 	return datetime.today().replace(hour=0,minute=0,second=0,microsecond=0)
 
 def load_schedule():
+    global schedule
+
     logger = logging.getLogger(__name__)
     service_date = get_current_servicedate()
 
@@ -85,6 +88,18 @@ def load_schedule():
     schedule = iff.get_services_details(services, service_date)
 
     logger.info('Loaded %s services', len(services))
+
+def store_schedule():
+    global schedule
+    logger = logging.getLogger(__name__)
+
+    logger.debug('Storing schedule to store')
+    store = serviceinfo.service_store.ServiceStore(config['schedule_store'])
+
+    store.store_services(schedule, store.TYPE_SCHEDULED)
+
+    logger.info('Services stored to schedule')
+
 
 def main():
     """
@@ -114,6 +129,7 @@ def main():
     logger.info('Scheduler starting')
 
     load_schedule()
+    store_schedule()
 
 if __name__ == "__main__":
     main()
