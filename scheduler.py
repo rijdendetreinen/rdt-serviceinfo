@@ -20,52 +20,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 import os
-import pytz
-from datetime import datetime, timedelta
 import logging
 import logging.config
 import yaml
 import argparse
-import redis
+from datetime import datetime
 
 import serviceinfo.iff
 import serviceinfo.service_store
+import serviceinfo.common
 
-def setup_logging(default_path='logging.yaml',
-    default_level=logging.INFO, env_key='LOG_CFG'):
-    """
-    Setup logging
-    """
-
-    path = default_path
-    value = os.getenv(env_key, None)
-    if value:
-        path = value
-    if os.path.exists(path):
-        with open(path, 'rt') as config_file:
-            log_config = yaml.load(config_file.read())
-        logging.config.dictConfig(log_config)
-    else:
-        logging.basicConfig(level=default_level)
-
-
-def load_config(config_file_path='config/scheduler.yaml'):
-    """
-    Load configuration
-    """
-
-    global config
-
-    if os.path.exists(config_file_path):
-        try:
-            with open(config_file_path, 'rt') as config_file:
-                config = yaml.load(config_file.read())
-        except Exception as e:
-            print "Error in config file: %s" % e
-            sys.exit(1)
-    else:
-        print "Config file '%s' does not exist" % config_file_path
-        sys.exit(1)
 
 
 def get_current_servicedate():
@@ -106,6 +70,8 @@ def main():
     Main loop
     """
 
+    global config
+
     # Initialize argparse
     parser = argparse.ArgumentParser(description='RDT IFF/ARNU service scheduler')
 
@@ -115,14 +81,8 @@ def main():
     args = parser.parse_args()
 
     # Load configuration:
-    load_config(args.configFile)
-
-    # Setup logging:
-    log_config_file = None
-    if 'logging' in config and 'log_config' in config['logging']:
-        log_config_file = config['logging']['log_config']
-    
-    setup_logging(log_config_file)
+    config = serviceinfo.common.load_config(args.configFile)
+    serviceinfo.common.setup_logging(config)
 
     # Get logger instance:
     logger = logging.getLogger(__name__)
