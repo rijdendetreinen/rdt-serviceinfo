@@ -1,9 +1,13 @@
 ---
-mysql:
+iff_database:
     host: localhost
     user: user
     password: pass
     database: iff
+schedule_store:
+    host: localhost
+    port: 6379
+    database: 0
 logging:
     log_config: config/logging.yaml
 ...
