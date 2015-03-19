@@ -86,6 +86,7 @@ class ServiceStore(object):
             service_stop = ServiceStop(stop)
 
             data = self.redis.hgetall('%s:stops:%s' % (key_prefix, stop))
+            service_stop.stop_name = data['stop_name']
             service_stop.arrival_time = data['arrival_time']
             service_stop.departure_time = data['departure_time']
             service_stop.arrival_time = data['arrival_time']
