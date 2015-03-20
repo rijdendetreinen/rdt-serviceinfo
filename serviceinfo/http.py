@@ -1,5 +1,5 @@
 import bottle
-from bottle import response
+from bottle import response, abort
 
 import service_store
 import common
@@ -8,9 +8,13 @@ import util
 @bottle.route('/service/<serviceid>')
 def index(serviceid):
     store = service_store.ServiceStore(common.configuration['schedule_store'])
-    service = store.get_service(serviceid, store.TYPE_SCHEDULED)
+    service = store.get_service(serviceid)
 
-    return service_to_dict(service)
+    if service == None:
+        abort(404, "Service not found")
+    else:
+        return service_to_dict(service)
+
 
 def service_to_dict(service):
     data = {
@@ -19,6 +23,7 @@ def service_to_dict(service):
     }
 
     return data
+
 
 def service_stops_to_dict(stops):
     data = []
@@ -31,8 +36,8 @@ def service_stops_to_dict(stops):
             'departure_time': util.datetime_to_iso(stop.departure_time),
             'arrival_platform': stop.arrival_platform,
             'departure_platform': stop.departure_platform,
-            'arrival_delay': int(stop.arrival_delay),
-            'departure_delay': int(stop.departure_delay)
+            'arrival_delay': stop.arrival_delay,
+            'departure_delay': stop.departure_delay
         }
 
         data.append(stop_data)

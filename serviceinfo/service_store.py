@@ -5,6 +5,7 @@ import util
 class ServiceStore(object):
     TYPE_SCHEDULED = 'scheduled'
     TYPE_ACTUAL = 'actual'
+    TYPE_ACTUAL_OR_SCHEDULED = 'actual_scheduled'
 
     def __init__(self, config):
         self.redis = redis.StrictRedis(host=config['host'], port=config['port'], db=config['database'])
@@ -68,7 +69,14 @@ class ServiceStore(object):
             self.store_service(service, type)
 
 
-    def get_service(self, service_id, type):
+    def get_service(self, service_id, type = TYPE_ACTUAL_OR_SCHEDULED):
+        if type == self.TYPE_ACTUAL_OR_SCHEDULED:
+            service = self.get_service(service_id, self.TYPE_ACTUAL)
+            if service != None:
+                return service
+            else:
+                return self.get_service(service_id, self.TYPE_SCHEDULED)
+
         service = Service()
 
         # Check whether service exists:
