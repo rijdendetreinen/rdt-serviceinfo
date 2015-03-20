@@ -37,7 +37,7 @@ def parse_arnu_service(service_info):
     stops = service_info.find('StopList').findall('Stop')
 
     for stop_info in stops:
-        stop = data.ServiceStop(stop_info.findtext('StopCode'))
+        stop = data.ServiceStop(stop_info.findtext('StopCode').lower())
         stop.arrival_time = util.parse_iso_datetime(stop_info.findtext('Arrival'))
         stop.arrival_delay = util.parse_iso_delay(stop_info.findtext('ArrivalTimeDelay'))
         stop.departure_time = util.parse_iso_datetime(stop_info.findtext('Departure'))
