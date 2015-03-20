@@ -3,6 +3,7 @@ from bottle import response
 
 import service_store
 import common
+import util
 
 @bottle.route('/service/<serviceid>')
 def index(serviceid):
@@ -26,12 +27,12 @@ def service_stops_to_dict(stops):
         stop_data = {
             'station': stop.stop_code,
             'station_name': stop.stop_name,
-            'arrival_time': stop.arrival_time,
-            'departure_time': stop.departure_time,
+            'arrival_time': util.datetime_to_iso(stop.arrival_time),
+            'departure_time': util.datetime_to_iso(stop.departure_time),
             'arrival_platform': stop.arrival_platform,
             'departure_platform': stop.departure_platform,
-            'arrival_delay': stop.arrival_delay,
-            'departure_delay': stop.departure_delay
+            'arrival_delay': int(stop.arrival_delay),
+            'departure_delay': int(stop.departure_delay)
         }
 
         data.append(stop_data)

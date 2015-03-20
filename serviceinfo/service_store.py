@@ -1,5 +1,6 @@
 import redis
 from serviceinfo.data import Service, ServiceStop
+import util
 
 class ServiceStore(object):
     TYPE_SCHEDULED = 'scheduled'
@@ -41,8 +42,8 @@ class ServiceStore(object):
             self.redis.rpush('%s:stops' % key_prefix, stop.stop_code)
 
             # Add the following data:
-            stop_data = {'arrival_time': stop.arrival_time,
-                         'departure_time': stop.departure_time,
+            stop_data = {'arrival_time': util.datetime_to_iso(stop.arrival_time),
+                         'departure_time': util.datetime_to_iso(stop.departure_time),
                          'arrival_platform': stop.arrival_platform,
                          'departure_platform': stop.departure_platform,
                          'arrival_delay': stop.arrival_delay,
@@ -88,8 +89,8 @@ class ServiceStore(object):
             data = self.redis.hgetall('%s:stops:%s' % (key_prefix, stop))
             service_stop.stop_name = data['stop_name']
             service_stop.arrival_time = data['arrival_time']
-            service_stop.departure_time = data['departure_time']
-            service_stop.arrival_time = data['arrival_time']
+            service_stop.departure_time = util.parse_iso_datetime(data['departure_time'])
+            service_stop.arrival_time = util.parse_iso_datetime(data['arrival_time'])
             service_stop.arrival_platform = data['arrival_platform']
             service_stop.departure_platform = data['departure_platform']
             service_stop.arrival_delay = data['arrival_delay']

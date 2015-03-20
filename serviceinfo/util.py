@@ -1,7 +1,7 @@
 import isodate
 
 def parse_iso_datetime(datetime_string):
-    if datetime_string == None:
+    if datetime_string == None or len(datetime_string) == 0:
         return None
     else:
         return isodate.parse_datetime(datetime_string)
@@ -25,3 +25,9 @@ def parse_sql_time(date, time):
         return date + time
     else:
         return time
+
+def datetime_to_iso(datetime):
+    if datetime == None:
+        return None
+    else:
+        return datetime.isoformat()
