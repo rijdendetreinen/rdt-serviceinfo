@@ -17,7 +17,7 @@ class IffSource(object):
             SELECT DISTINCT ts.serviceid, f.servicedate FROM timetable_service ts
             JOIN timetable_validity tv ON (ts.serviceid = tv.serviceid)
             JOIN footnote f ON (tv.footnote = f.footnote)
-            WHERE f.servicedate = %s;""", service_date)
+            WHERE f.servicedate = %s;""", service_date.strftime('%Y-%m-%d'))
 
         for row in cursor:
             service_id.append(row[0])
@@ -53,6 +53,7 @@ class IffSource(object):
             return None
 
         for row in cursor:
+            service.service_date = service_date
             service.service_id = row[1]
             
             stop = data.ServiceStop(row[2].lower())

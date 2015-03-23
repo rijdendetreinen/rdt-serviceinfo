@@ -1,3 +1,4 @@
+import datetime
 import isodate
 
 def parse_iso_datetime(datetime_string):
@@ -21,10 +22,10 @@ def parse_sql_time(date, time):
 
     Returns None when time is None.
     """
-    if time != None:
-        return date + time
-    else:
+    if time == None:
         return time
+    else:
+        return datetime.datetime.combine(date, (datetime.datetime.min + time).time())
 
 def datetime_to_iso(datetime):
     if datetime == None:

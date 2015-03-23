@@ -47,4 +47,7 @@ def parse_arnu_service(service_info):
 
         service.stops.append(stop)
 
+    # Determine servicedate based on first stop:
+    service.service_date = service.stops[0].departure_time.date()
+
     return service

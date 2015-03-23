@@ -1,4 +1,6 @@
 import redis
+import isodate
+
 from serviceinfo.data import Service, ServiceStop
 import util
 
@@ -23,10 +25,10 @@ class ServiceStore(object):
         # type=schedule or actual
         # 
         # TODO: check/remove existing key?
-        self.redis.sadd('services:%s' % type, service.service_id)
+        self.redis.sadd('services:%s:%s' % (type, service.get_servicedate_str()), service.service_id)
 
         # Determine Redis key prefix:
-        key_prefix = 'service:%s:%s' % (type, service.service_id)
+        key_prefix = 'service:%s:%s:%s' % (type, service.get_servicedate_str(), service.service_id)
 
         self.redis.delete('%s:stops' % key_prefix)
 
@@ -69,24 +71,25 @@ class ServiceStore(object):
             self.store_service(service, type)
 
 
-    def get_service(self, service_id, type = TYPE_ACTUAL_OR_SCHEDULED):
+    def get_service(self, servicedate, service_id, type = TYPE_ACTUAL_OR_SCHEDULED):
         if type == self.TYPE_ACTUAL_OR_SCHEDULED:
-            service = self.get_service(service_id, self.TYPE_ACTUAL)
+            service = self.get_service(servicedate, service_id, self.TYPE_ACTUAL)
             if service != None:
                 return service
             else:
-                return self.get_service(service_id, self.TYPE_SCHEDULED)
+                return self.get_service(servicedate, service_id, self.TYPE_SCHEDULED)
 
         service = Service()
 
         # Check whether service exists:
-        if self.redis.sismember('services:%s' % type, service_id) == False:
+        if self.redis.sismember('services:%s:%s' % (type, servicedate), service_id) == False:
             return None
 
         service.service_id = service_id
+        service.service_date = isodate.parse_date(servicedate)
 
         # Determine Redis key prefix:
-        key_prefix = 'service:%s:%s' % (type, service_id)
+        key_prefix = 'service:%s:%s:%s' % (type, servicedate, service_id)
 
         # Get stops:
         stops = self.redis.lrange('%s:stops' % key_prefix, 0, -1)

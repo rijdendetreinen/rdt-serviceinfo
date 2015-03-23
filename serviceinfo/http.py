@@ -5,10 +5,10 @@ import service_store
 import common
 import util
 
-@bottle.route('/service/<serviceid>')
-def index(serviceid):
+@bottle.route('/service/<servicedate>/<serviceid>')
+def index(servicedate, serviceid):
     store = service_store.ServiceStore(common.configuration['schedule_store'])
-    service = store.get_service(serviceid)
+    service = store.get_service(servicedate, serviceid)
 
     if service == None:
         abort(404, "Service not found")
@@ -19,6 +19,7 @@ def index(serviceid):
 def service_to_dict(service):
     data = {
         'service': service.service_id,
+        'servicedate': service.get_servicedate_str(),
         'stops': service_stops_to_dict(service.stops)
     }
 
