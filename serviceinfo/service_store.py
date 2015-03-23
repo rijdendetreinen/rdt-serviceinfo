@@ -104,8 +104,8 @@ class ServiceStore(object):
             service_stop.arrival_time = util.parse_iso_datetime(data['arrival_time'])
             service_stop.arrival_platform = data['arrival_platform']
             service_stop.departure_platform = data['departure_platform']
-            service_stop.arrival_delay = data['arrival_delay']
-            service_stop.departure_delay = data['departure_delay']
+            service_stop.arrival_delay = util.parse_str_int(data['arrival_delay'])
+            service_stop.departure_delay = util.parse_str_int(data['departure_delay'])
 
             service.stops.append(service_stop)
 

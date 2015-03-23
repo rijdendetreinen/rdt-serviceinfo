@@ -10,9 +10,19 @@ def parse_iso_datetime(datetime_string):
 
 def parse_iso_delay(delay_string):
     if delay_string == None:
-        return None
+        return 0
     else:
-        return isodate.parse_duration(delay_string)
+        delay = isodate.parse_duration(delay_string)
+
+        # Convert to minutes:
+        return int(round(delay.seconds / 60))
+
+
+def parse_str_int(string):
+    if string == None or string == '':
+        return 0
+    else:
+        return int(string)
 
 
 def parse_sql_time(date, time):
