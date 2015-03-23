@@ -34,7 +34,7 @@ import serviceinfo.http
 # Initialiseer argparse
 parser = argparse.ArgumentParser(description='HTTP test tool')
 
-parser.add_argument('-c', '--config', dest='configFile', default='config/scheduler.yaml',
+parser.add_argument('-c', '--config', dest='configFile', default='config/serviceinfo.yaml',
     action='store', help='Configuration file')
 
 args = parser.parse_args()

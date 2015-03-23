@@ -112,7 +112,7 @@ def main():
     # Initialize argparse
     parser = argparse.ArgumentParser(description='RDT IFF/ARNU listener')
 
-    parser.add_argument('-c', '--config', dest='configFile', default='config/scheduler.yaml',
+    parser.add_argument('-c', '--config', dest='configFile', default='config/serviceinfo.yaml',
         action='store', help='Configuration file')
 
     args = parser.parse_args()
@@ -127,7 +127,7 @@ def main():
 
     prepare_zmq(serviceinfo.common.configuration['arnu_source']['socket'])
 
-    # Start een nieuwe thread om messages te verwerken
+    # Start new thread to process ARNU messages
     worker_thread = WorkerThread()
     worker_thread.daemon = True
     worker_thread.start()
@@ -140,13 +140,13 @@ def main():
             message_queue.put(content)
 
     except KeyboardInterrupt:
-        logger.info('Afsluiten...')
+        logger.info('Shutting down...')
 
         arnu_socket.close()
         context.term()
 
     except Exception:
-        logger.error("Fout in main loop", exc_info=True)
+        logger.error("Error occured in main loop", exc_info=True)
 
 
 if __name__ == "__main__":

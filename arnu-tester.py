@@ -66,7 +66,7 @@ def main():
     # Initialize argparse
     parser = argparse.ArgumentParser(description='RDT IFF/ARNU test tool')
 
-    parser.add_argument('-c', '--config', dest='configFile', default='config/scheduler.yaml',
+    parser.add_argument('-c', '--config', dest='configFile', default='config/serviceinfo.yaml',
         action='store', help='Configuration file')
     parser.add_argument('FILE', nargs=1, action='store', help='ARNU message file (one XML message per line)')
 
