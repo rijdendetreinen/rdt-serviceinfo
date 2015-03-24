@@ -60,8 +60,8 @@ class IffSource(object):
             stop.stop_name = row[3]
             stop.arrival_time = util.parse_sql_time(service_date, row[4])
             stop.departure_time = util.parse_sql_time(service_date, row[5])
-            stop.arrival_platform = row[6]
-            stop.departure_platform = row[7]
+            stop.scheduled_arrival_platform = row[6]
+            stop.scheduled_departure_platform = row[7]
 
             service.stops.append(stop)
 

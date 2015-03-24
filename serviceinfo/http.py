@@ -35,8 +35,10 @@ def service_stops_to_dict(stops):
             'station_name': stop.stop_name,
             'arrival_time': util.datetime_to_iso(stop.arrival_time),
             'departure_time': util.datetime_to_iso(stop.departure_time),
-            'arrival_platform': stop.arrival_platform,
-            'departure_platform': stop.departure_platform,
+            'scheduled_arrival_platform': stop.scheduled_arrival_platform,
+            'actual_arrival_platform': stop.actual_arrival_platform,
+            'scheduled_departure_platform': stop.scheduled_departure_platform,
+            'actual_departure_platform': stop.actual_departure_platform,
             'arrival_delay': stop.arrival_delay,
             'departure_delay': stop.departure_delay
         }

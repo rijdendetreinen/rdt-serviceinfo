@@ -47,8 +47,10 @@ class ServiceStore(object):
             # Add the following data:
             stop_data = {'arrival_time': util.datetime_to_iso(stop.arrival_time),
                          'departure_time': util.datetime_to_iso(stop.departure_time),
-                         'arrival_platform': stop.arrival_platform,
-                         'departure_platform': stop.departure_platform,
+                         'scheduled_arrival_platform': stop.scheduled_arrival_platform,
+                         'actual_arrival_platform': stop.actual_arrival_platform,
+                         'scheduled_departure_platform': stop.scheduled_departure_platform,
+                         'actual_departure_platform': stop.actual_departure_platform,
                          'arrival_delay': stop.arrival_delay,
                          'departure_delay': stop.departure_delay,
                          'stop_name': stop.stop_name}
@@ -102,8 +104,10 @@ class ServiceStore(object):
             service_stop.arrival_time = data['arrival_time']
             service_stop.departure_time = util.parse_iso_datetime(data['departure_time'])
             service_stop.arrival_time = util.parse_iso_datetime(data['arrival_time'])
-            service_stop.arrival_platform = data['arrival_platform']
-            service_stop.departure_platform = data['departure_platform']
+            service_stop.scheduled_arrival_platform = data['scheduled_arrival_platform']
+            service_stop.actual_arrival_platform = data['actual_arrival_platform']
+            service_stop.scheduled_departure_platform = data['scheduled_departure_platform']
+            service_stop.actual_departure_platform = data['actual_departure_platform']
             service_stop.arrival_delay = util.parse_str_int(data['arrival_delay'])
             service_stop.departure_delay = util.parse_str_int(data['departure_delay'])
 

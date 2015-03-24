@@ -18,10 +18,12 @@ class ServiceStop(object):
     stop_code = None
     stop_name = None
     departure_time = None
-    departure_platform = None
+    scheduled_departure_platform = None
+    actual_departure_platform = None
     departure_delay = 0
     arrival_time = None
-    arrival_platform = None
+    scheduled_arrival_platform = None
+    actual_arrival_platform = None
     arrival_delay = 0
 
     def __init__(self, stop_code):
@@ -29,3 +31,9 @@ class ServiceStop(object):
 
     def __repr__(self):
         return "<ServiceStop @ %s>" % self.stop_code
+
+    def is_arrival_platform_changed(self):
+        return (self.actual_arrival_platform != self.scheduled_arrival_platform)
+
+    def is_departure_platform_changed(self):
+        return (self.actual_departure_platform != self.scheduled_departure_platform)

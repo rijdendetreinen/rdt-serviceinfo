@@ -42,8 +42,10 @@ def parse_arnu_service(service_info):
         stop.arrival_delay = util.parse_iso_delay(stop_info.findtext('ArrivalTimeDelay'))
         stop.departure_time = util.parse_iso_datetime(stop_info.findtext('Departure'))
         stop.departure_delay = util.parse_iso_delay(stop_info.findtext('DepartureTimeDelay'))
-        stop.arrival_platform = stop_info.findtext('ArrivalPlatform')
-        stop.departure_platform = stop_info.findtext('DeparturePlatform')
+        stop.scheduled_arrival_platform = stop_info.findtext('ArrivalPlatform')
+        stop.actual_arrival_platform = stop_info.findtext('ActualArrivalPlatform')
+        stop.scheduled_departure_platform = stop_info.findtext('DeparturePlatform')
+        stop.actual_departure_platform = stop_info.findtext('ActualDeparturePlatform')
 
         service.stops.append(stop)
 
