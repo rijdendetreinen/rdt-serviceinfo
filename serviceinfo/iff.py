@@ -4,6 +4,8 @@ import logging
 import data
 import util
 
+__logger__ = logging.getLogger(__name__)
+
 class IffSource(object):
     def __init__(self, config):
         self.connection = MySQLdb.connect(host=config['host'], user=config['user'], passwd=config['password'], db=config['database'])
@@ -54,8 +56,13 @@ class IffSource(object):
 
         for row in cursor:
             service.service_date = service_date
-            service.service_id = row[1]
-            
+
+            if row[1] == 0:
+                service.service_id = 'i%s' % row[0]
+                __logger__.debug('Invalid service id, using %s for service %s', service.service_id, row[1])
+            else:
+                service.service_id = row[1]
+
             stop = data.ServiceStop(row[2].lower())
             stop.stop_name = row[3]
             stop.arrival_time = util.parse_sql_time(service_date, row[4])
@@ -69,7 +76,6 @@ class IffSource(object):
 
 
     def get_services_details(self, service_ids, service_date):
-        logger = logging.getLogger(__name__)
         services = []
 
         for service_id in service_ids:
@@ -77,6 +83,6 @@ class IffSource(object):
             if (service != None):
                 services.append(service)
             else:
-                logger.warning('Skipping service %s', service_id)
+                __logger__.warning('Skipping service %s', service_id)
 
         return services
