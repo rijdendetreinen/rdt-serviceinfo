@@ -10,7 +10,7 @@ import data
 # Vraag een logger object:
 __logger__ = logging.getLogger(__name__)
 
-def parse_arnu_message(data):
+def parse_arnu_message(data, iff):
     # Parse XML:
     try:
         root = ET.fromstring(data)
@@ -24,11 +24,11 @@ def parse_arnu_message(data):
     services = []
 
     for service_info_item in service_info_items:
-        services.append(parse_arnu_service(service_info_item))
+        services.append(parse_arnu_service(service_info_item, iff))
 
     return services
 
-def parse_arnu_service(service_info):
+def parse_arnu_service(service_info, iff):
     service = data.Service()
 
     service.service_id = service_info.find('ServiceCode').text
@@ -66,6 +66,7 @@ def parse_arnu_service(service_info):
             stop.actual_arrival_platform = stop_info.findtext('ActualArrivalPlatform')
             stop.scheduled_departure_platform = stop_info.findtext('DeparturePlatform')
             stop.actual_departure_platform = stop_info.findtext('ActualDeparturePlatform')
+            stop.stop_name = iff.get_station_name(stopcode)
 
             service.stops.append(stop)
 

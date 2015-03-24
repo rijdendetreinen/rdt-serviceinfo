@@ -32,6 +32,7 @@ from gzip import GzipFile
 from cStringIO import StringIO
 
 import serviceinfo.arnu
+import serviceinfo.iff
 import serviceinfo.service_store
 import serviceinfo.common
 
@@ -64,12 +65,16 @@ class WorkerThread(threading.Thread):
 
     logger = None
     store = None
+    iff = None
 
     def __init__ (self):
         self.logger = logging.getLogger(__name__)
 
         self.logger.debug('Initializing store')
         self.store = serviceinfo.service_store.ServiceStore(serviceinfo.common.configuration['schedule_store'])
+
+        self.logger.debug('Initializing IFF connection')
+        self.iff = serviceinfo.iff.IffSource(serviceinfo.common.configuration['iff_database'])
 
         threading.Thread.__init__(self, name='WorkerThread')
 
@@ -90,7 +95,7 @@ class WorkerThread(threading.Thread):
             if content != None:
                 # Parse ARNU message:
                 try:
-                    services = serviceinfo.arnu.parse_arnu_message(content)
+                    services = serviceinfo.arnu.parse_arnu_message(content, self.iff)
                     for service in services:
                         self.store.store_service(service, self.store.TYPE_ACTUAL)
                         self.logger.debug('New information for service %s', service.service_id)

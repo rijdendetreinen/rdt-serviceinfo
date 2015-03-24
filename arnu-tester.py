@@ -27,6 +27,7 @@ import argparse
 from datetime import datetime
 
 import serviceinfo.arnu
+import serviceinfo.iff
 import serviceinfo.service_store
 import serviceinfo.common
 
@@ -34,6 +35,8 @@ import serviceinfo.common
 def load_dummy_messages(filename):
     logger = logging.getLogger(__name__)
     logger.debug('Initializing store')
+
+    iff = serviceinfo.iff.IffSource(serviceinfo.common.configuration['iff_database'])
     store = serviceinfo.service_store.ServiceStore(serviceinfo.common.configuration['schedule_store'])
 
     logger.info('Loading message dump')
@@ -45,7 +48,7 @@ def load_dummy_messages(filename):
         with open(filename, 'r') as f:
             for line in f:
                 msg_counter = msg_counter + 1
-                services = serviceinfo.arnu.parse_arnu_message(line)
+                services = serviceinfo.arnu.parse_arnu_message(line, iff)
                 for service in services:
                     service_counter = service_counter + 1
                     store.store_service(service, store.TYPE_ACTUAL)

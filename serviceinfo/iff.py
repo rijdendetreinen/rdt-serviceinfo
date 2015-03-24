@@ -86,3 +86,17 @@ class IffSource(object):
                 __logger__.warning('Skipping service %s', service_id)
 
         return services
+
+
+    def get_station_name(self, station_code):
+        service_id = []
+
+        cursor = self.connection.cursor()
+        cursor.execute("""
+            SELECT name FROM station
+            WHERE shortname = %s;""", station_code)
+
+        if cursor.rowcount == 0:
+            return None
+
+        return cursor.fetchone()[0]
