@@ -34,7 +34,7 @@ class IffSource(object):
         cursor.execute("""
             SELECT ts.serviceid, t_sv.servicenumber, ts.station, s.name, ts.arrivaltime, ts.departuretime,
                 p.arrival AS arrival_platform, p.departure AS departure_platform,
-                tt.transmode
+                tt.transmode, tm.description AS transmode_description
 
             FROM timetable_stop ts
             JOIN station s ON ts.station = s.shortname
@@ -44,8 +44,9 @@ class IffSource(object):
             JOIN footnote f_s ON (tv.footnote = f_s.footnote)
             LEFT JOIN timetable_platform p ON (ts.serviceid = p.serviceid AND ts.idx = p.idx)
             LEFT JOIN footnote f_p ON (p.footnote = f_p.footnote AND f_p.servicedate = f_s.servicedate)
-            JOIN timetable_transport tt
+            LEFT JOIN timetable_transport tt
                 ON (tt.serviceid = ts.serviceid AND tt.firststop <= ts.idx AND tt.laststop >= ts.idx)
+            LEFT JOIN trnsmode tm ON (tt.transmode = tm.code)
             WHERE
                 ts.serviceid = %s
                 AND f_s.servicedate = %s
@@ -54,14 +55,22 @@ class IffSource(object):
         if cursor.rowcount == 0:
             return None
 
+        metadata_set = False
+
         for row in cursor:
             service.service_date = service_date
 
-            if row[1] == 0:
-                service.service_id = 'i%s' % row[0]
-                __logger__.debug('Invalid service id, using %s for service %s', service.service_id, row[1])
-            else:
-                service.service_id = row[1]
+            if metadata_set == False:
+                if row[1] == 0:
+                    service.service_id = 'i%s' % row[0]
+                    __logger__.debug('Invalid service id, using %s for service %s', service.service_id, row[1])
+                else:
+                    service.service_id = row[1]
+
+                service.transport_mode = row[8]
+                service.transport_mode_description = row[9]
+
+                metadata_set = True
 
             stop = data.ServiceStop(row[2].lower())
             stop.stop_name = row[3]
@@ -95,6 +104,20 @@ class IffSource(object):
         cursor.execute("""
             SELECT name FROM station
             WHERE shortname = %s;""", station_code)
+
+        if cursor.rowcount == 0:
+            return None
+
+        return cursor.fetchone()[0]
+
+
+    def get_transport_mode(self, transport_mode):
+        service_id = []
+
+        cursor = self.connection.cursor()
+        cursor.execute("""
+            SELECT description FROM trnsmode
+            WHERE code = %s;""", transport_mode)
 
         if cursor.rowcount == 0:
             return None

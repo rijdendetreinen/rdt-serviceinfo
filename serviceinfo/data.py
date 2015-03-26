@@ -1,13 +1,16 @@
 class Service(object):
     service_id = 0
+    cancelled = False
     stops = []
     service_date = None
+    transport_mode = None
+    transport_mode_description = None
 
     def __init__(self):
         self.stops = []
 
     def __repr__(self):
-        return "<Service #%s @ %s [%s stops]>" % (self.service_id, self.get_servicedate_str(), len(self.stops))
+        return "<Service %s #%s @ %s [%s stops]>" % (self.transport_mode, self.service_id, self.get_servicedate_str(), len(self.stops))
 
     def get_servicedate_str(self):
         return self.service_date.strftime('%Y-%m-%d')

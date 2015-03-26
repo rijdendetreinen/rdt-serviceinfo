@@ -19,6 +19,9 @@ def index(servicedate, serviceid):
 def service_to_dict(service):
     data = {
         'service': service.service_id,
+        'cancelled': service.cancelled,
+        'transport_mode': service.transport_mode,
+        'transport_mode_description': service.transport_mode_description,
         'servicedate': service.get_servicedate_str(),
         'stops': service_stops_to_dict(service.stops)
     }

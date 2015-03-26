@@ -30,10 +30,21 @@ class ServiceStore(object):
         # Determine Redis key prefix:
         key_prefix = 'service:%s:%s:%s' % (type, service.get_servicedate_str(), service.service_id)
 
+        # Store service information:
+        self.redis.delete('%s:info' % key_prefix)
+
+        service_data = {'cancelled': service.cancelled,
+                        'transport_mode': service.transport_mode,
+                        'transport_mode_description': service.transport_mode_description,
+                       }
+
+        self.redis.hmset('%s:info' % key_prefix, service_data)
+
+        # Remove existing stops
+        # TODO: check for existing key, delete any stop that might still exist as key
         self.redis.delete('%s:stops' % key_prefix)
 
         # TODO: metadata like train type, etc.
-        # Enforce lowercase stop codes
 
         # Add stops:
         for stop in service.stops:
@@ -42,7 +53,7 @@ class ServiceStore(object):
                 continue
 
             # Add service and metadata
-            self.redis.rpush('%s:stops' % key_prefix, stop.stop_code)
+            self.redis.rpush('%s:stops' % key_prefix, stop.stop_code.lower())
 
             # Add the following data:
             stop_data = {'arrival_time': util.datetime_to_iso(stop.arrival_time),
@@ -59,7 +70,7 @@ class ServiceStore(object):
                 if v == None:
                     stop_data[k] = ''
 
-            self.redis.hmset('%s:stops:%s' % (key_prefix, stop.stop_code), stop_data)
+            self.redis.hmset('%s:stops:%s' % (key_prefix, stop.stop_code.lower()), stop_data)
 
 
     def store_services(self, services, type):
@@ -92,6 +103,13 @@ class ServiceStore(object):
 
         # Determine Redis key prefix:
         key_prefix = 'service:%s:%s:%s' % (type, servicedate, service_id)
+
+        # Get metadata:
+        service_data = self.redis.hgetall('%s:info' % key_prefix)
+
+        service.cancelled = (service_data['cancelled'] == 'True')
+        service.transport_mode = service_data['transport_mode']
+        service.transport_mode_description = service_data['transport_mode_description']
 
         # Get stops:
         stops = self.redis.lrange('%s:stops' % key_prefix, 0, -1)

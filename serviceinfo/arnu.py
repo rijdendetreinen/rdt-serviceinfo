@@ -32,6 +32,8 @@ def parse_arnu_service(service_info, iff):
     service = data.Service()
 
     service.service_id = service_info.find('ServiceCode').text
+    service.transport_mode = service_info.find('TransportModeCode').text
+    service.transport_mode_description = iff.get_transport_mode(service.transport_mode)
 
     # Parse stops:
     stops = service_info.find('StopList').findall('Stop')
