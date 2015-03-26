@@ -64,7 +64,9 @@ class ServiceStore(object):
                          'actual_departure_platform': stop.actual_departure_platform,
                          'arrival_delay': stop.arrival_delay,
                          'departure_delay': stop.departure_delay,
-                         'stop_name': stop.stop_name}
+                         'stop_name': stop.stop_name,
+                         'cancelled_arrival': stop.cancelled_arrival,
+                         'cancelled_departure': stop.cancelled_departure}
 
             for k,v in stop_data.iteritems():
                 if v == None:
@@ -128,6 +130,8 @@ class ServiceStore(object):
             service_stop.actual_departure_platform = data['actual_departure_platform']
             service_stop.arrival_delay = util.parse_str_int(data['arrival_delay'])
             service_stop.departure_delay = util.parse_str_int(data['departure_delay'])
+            service_stop.cancelled_arrival = (data['cancelled_arrival'] == 'True')
+            service_stop.cancelled_departure = (data['cancelled_departure'] == 'True')
 
             service.stops.append(service_stop)
 

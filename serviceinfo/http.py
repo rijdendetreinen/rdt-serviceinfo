@@ -43,7 +43,9 @@ def service_stops_to_dict(stops):
             'scheduled_departure_platform': stop.scheduled_departure_platform,
             'actual_departure_platform': stop.actual_departure_platform,
             'arrival_delay': stop.arrival_delay,
-            'departure_delay': stop.departure_delay
+            'departure_delay': stop.departure_delay,
+            'cancelled_arrival': stop.cancelled_arrival,
+            'cancelled_departure': stop.cancelled_departure
         }
 
         data.append(stop_data)

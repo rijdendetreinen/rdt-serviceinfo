@@ -37,39 +37,54 @@ def parse_arnu_service(service_info, iff):
 
     # Parse stops:
     stops = service_info.find('StopList').findall('Stop')
+    previous_stop_cancelled = False
 
     for stop_info in stops:
         stopcode = stop_info.findtext('StopCode').lower()
-
-        process_stop = True
-
-        if 'StopType' in stop_info.attrib:
-            # Check whether this stop is not cancelled:
-            if stop_info.attrib['StopType'] == 'Cancelled-Stop':
-                __logger__.debug('Cancelled stop %s for service %s', stopcode, service.service_id)
-                process_stop = False
-
-            # Check whether this stop is diverted:
-            if stop_info.attrib['StopType'] == 'Diverted-Stop':
-                __logger__.debug('Diverted stop %s for service %s', stopcode, service.service_id)
-                process_stop = False
+        cancelled = False
 
         # Determine servicedate based on first stop (may include cancelled stops):
         if service.service_date == None:
             service.service_date = util.parse_iso_datetime(stop_info.findtext('Departure')).date()
 
-        if process_stop == True:
-            stop = data.ServiceStop(stopcode)
-            stop.arrival_time = util.parse_iso_datetime(stop_info.findtext('Arrival'))
-            stop.arrival_delay = util.parse_iso_delay(stop_info.findtext('ArrivalTimeDelay'))
-            stop.departure_time = util.parse_iso_datetime(stop_info.findtext('Departure'))
-            stop.departure_delay = util.parse_iso_delay(stop_info.findtext('DepartureTimeDelay'))
-            stop.scheduled_arrival_platform = stop_info.findtext('ArrivalPlatform')
-            stop.actual_arrival_platform = stop_info.findtext('ActualArrivalPlatform')
-            stop.scheduled_departure_platform = stop_info.findtext('DeparturePlatform')
-            stop.actual_departure_platform = stop_info.findtext('ActualDeparturePlatform')
-            stop.stop_name = iff.get_station_name(stopcode)
+        stop = data.ServiceStop(stopcode)
+        stop.arrival_time = util.parse_iso_datetime(stop_info.findtext('Arrival'))
+        stop.arrival_delay = util.parse_iso_delay(stop_info.findtext('ArrivalTimeDelay'))
+        stop.departure_time = util.parse_iso_datetime(stop_info.findtext('Departure'))
+        stop.departure_delay = util.parse_iso_delay(stop_info.findtext('DepartureTimeDelay'))
+        stop.scheduled_arrival_platform = stop_info.findtext('ArrivalPlatform')
+        stop.actual_arrival_platform = stop_info.findtext('ActualArrivalPlatform')
+        stop.scheduled_departure_platform = stop_info.findtext('DeparturePlatform')
+        stop.actual_departure_platform = stop_info.findtext('ActualDeparturePlatform')
+        stop.stop_name = iff.get_station_name(stopcode)
 
-            service.stops.append(stop)
+        if 'StopType' in stop_info.attrib:
+            # Check whether this stop is not cancelled:
+            if stop_info.attrib['StopType'] == 'Cancelled-Stop':
+                __logger__.debug('Cancelled stop %s for service %s', stopcode, service.service_id)
+                cancelled = True
+
+            # Check whether this stop is diverted:
+            if stop_info.attrib['StopType'] == 'Diverted-Stop':
+                __logger__.debug('Diverted stop %s for service %s', stopcode, service.service_id)
+                cancelled = True
+
+        # Set arrival to cancelled if the previous stop was cancelled
+        if previous_stop_cancelled == True:
+            stop.cancelled_arrival = True
+
+        # This stop is cancelled: this service won't departure here
+        if cancelled == True:
+            stop.cancelled_departure = True
+            previous_stop_cancelled = True
+
+        service.stops.append(stop)
+
+    # Check whether complete service is cancelled:
+    service.cancelled = True
+    for stop in service.stops:
+        if stop.cancelled_departure == False:
+            service.cancelled = False
+            break
 
     return service
