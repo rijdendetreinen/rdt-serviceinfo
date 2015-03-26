@@ -119,7 +119,14 @@ class ServiceStore(object):
         for stop in stops:
             service_stop = ServiceStop(stop)
 
+            # Get all data for this stop:
             data = self.redis.hgetall('%s:stops:%s' % (key_prefix, stop))
+
+            # Convert empty strings to None:
+            for k,v in data.iteritems():
+                if v == '':
+                    data[k] = None
+
             service_stop.stop_name = data['stop_name']
             service_stop.arrival_time = data['arrival_time']
             service_stop.departure_time = util.parse_iso_datetime(data['departure_time'])

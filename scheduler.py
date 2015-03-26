@@ -32,8 +32,8 @@ import serviceinfo.common
 
 
 def get_current_servicedate():
-	# TODO: determine on current time whether servicedate belongs to today or next day
-	return datetime.today().replace(hour=0,minute=0,second=0,microsecond=0).date()
+    # TODO: determine on current time whether servicedate belongs to today or next day
+    return datetime.today().replace(hour=0,minute=0,second=0,microsecond=0).date()
 
 def load_schedule():
     global schedule
