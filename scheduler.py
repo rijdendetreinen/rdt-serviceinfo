@@ -22,32 +22,53 @@ import logging
 import logging.config
 import argparse
 from datetime import datetime
+import isodate
+import sys
 
 import serviceinfo.iff
 import serviceinfo.service_store
 import serviceinfo.common
+import serviceinfo.util
 
 
-def get_current_servicedate():
+def get_current_servicedate(date='TODAY'):
     """
     Get the current servicedate. Returns a datetime.date object.
     """
 
+    logger = logging.getLogger(__name__)
+
     # TODO: determine on current time whether servicedate
     # is today or next day (4:00 AM)
-    return datetime.today().replace(
-        hour=0, minute=0, second=0, microsecond=0).date()
+    if date == 'TODAY':
+        service_date = datetime.today().replace(
+            hour=0, minute=0, second=0, microsecond=0).date()
+    else:
+        # Parse date
+        try:
+            service_date = isodate.isodates.parse_date(date)
+        except (isodate.ISO8601Error, ValueError) as exception:
+            logger.error('Could not parse service date: %s', exception)
+            service_date = None
+        
+        if service_date != None:
+            logger.warning('Custom service date used (%s)',
+                service_date.strftime('%Y-%m-%d'))
 
-def load_schedule():
+    return service_date
+
+def load_schedule(service_date):
     """
     Retrieve the schedule from IFF.
+
+    Args:
+        service_date (date): Date for which to retrieve the schedule
 
     Returns:
         list of scheduled services (containing Service objects)
     """
 
     logger = logging.getLogger(__name__)
-    service_date = get_current_servicedate()
 
     logger.debug('Getting services for %s', service_date)
     iff = serviceinfo.iff.IffSource(
@@ -96,6 +117,9 @@ def main():
         default='config/serviceinfo.yaml',
         action='store', help='Configuration file')
 
+    parser.add_argument('-d', '--servicedate', dest='servicedate', default='TODAY',
+        action='store', help='Service date')
+
     args = parser.parse_args()
 
     # Load configuration:
@@ -106,7 +130,13 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info('Scheduler starting')
 
-    schedule = load_schedule()
+    servicedate = get_current_servicedate(args.servicedate)
+
+    if servicedate == None:
+        logger.error("No valid service date, aborting.")
+        sys.exit(1)
+
+    schedule = load_schedule(servicedate)
     store_schedule(schedule)
 
 if __name__ == "__main__":
