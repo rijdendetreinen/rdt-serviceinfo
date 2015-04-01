@@ -1,5 +1,6 @@
 class Service(object):
     service_id = 0
+    servicenumber = 0
     cancelled = False
     stops = []
     service_date = None
@@ -10,10 +11,18 @@ class Service(object):
         self.stops = []
 
     def __repr__(self):
-        return "<Service %s #%s @ %s [%s stops]>" % (self.transport_mode, self.service_id, self.get_servicedate_str(), len(self.stops))
+        return "<Service i%s / %s%s-%s @ %s [%s stops]>" % (self.service_id,
+            self.transport_mode, self.servicenumber, self.get_destination_str(),
+            self.get_servicedate_str(), len(self.stops))
 
     def get_servicedate_str(self):
         return self.service_date.strftime('%Y-%m-%d')
+
+    def get_destination(self):
+        return self.stops[-1]
+
+    def get_destination_str(self):
+        return self.get_destination().stop_code
 
 
 class ServiceStop(object):

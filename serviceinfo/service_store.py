@@ -25,10 +25,12 @@ class ServiceStore(object):
         # type=schedule or actual
         # 
         # TODO: check/remove existing key?
-        self.redis.sadd('services:%s:%s' % (type, service.get_servicedate_str()), service.service_id)
+        self.redis.sadd('services:%s:%s' % (type, service.get_servicedate_str()), service.servicenumber)
+        self.redis.sadd('services:%s:%s:%s' % (type, service.get_servicedate_str(), service.servicenumber),
+            service.service_id)
 
         # Determine Redis key prefix:
-        key_prefix = 'service:%s:%s:%s' % (type, service.get_servicedate_str(), service.service_id)
+        key_prefix = 'schedule:%s:%s:%s' % (type, service.get_servicedate_str(), service.service_id)
 
         # Store service information:
         self.redis.delete('%s:info' % key_prefix)
@@ -36,6 +38,7 @@ class ServiceStore(object):
         service_data = {'cancelled': service.cancelled,
                         'transport_mode': service.transport_mode,
                         'transport_mode_description': service.transport_mode_description,
+                        'servicenumber': service.servicenumber,
                        }
 
         self.redis.hmset('%s:info' % key_prefix, service_data)
@@ -86,25 +89,44 @@ class ServiceStore(object):
             self.store_service(service, type)
 
 
-    def get_service(self, servicedate, service_id, type = TYPE_ACTUAL_OR_SCHEDULED):
+    def get_service(self, servicedate, servicenumber, type = TYPE_ACTUAL_OR_SCHEDULED):
         if type == self.TYPE_ACTUAL_OR_SCHEDULED:
-            service = self.get_service(servicedate, service_id, self.TYPE_ACTUAL)
+            service = self.get_service(servicedate, servicenumber, self.TYPE_ACTUAL)
             if service != None:
                 return service
             else:
-                return self.get_service(servicedate, service_id, self.TYPE_SCHEDULED)
+                return self.get_service(servicedate, servicenumber, self.TYPE_SCHEDULED)
+
+        services = []
+
+        # Check whether service number exists:
+        if self.redis.sismember('services:%s:%s' % (type, servicedate), servicenumber) == False:
+            return None
+
+        # Retrieve all services for this servicenumber:
+        service_ids = self.redis.smembers('services:%s:%s:%s' % (type, servicedate, servicenumber))
+
+        for service_id in service_ids:
+            services.append(self.get_service_details(servicedate, service_id, type))
+
+        return services
+
+
+    def get_service_details(self, servicedate, service_id, type = TYPE_ACTUAL_OR_SCHEDULED):
+        if type == self.TYPE_ACTUAL_OR_SCHEDULED:
+            service = self.get_service_details(servicedate, service_id, self.TYPE_ACTUAL)
+            if service != None:
+                return service
+            else:
+                return self.get_service_details(servicedate, service_id, self.TYPE_SCHEDULED)
 
         service = Service()
-
-        # Check whether service exists:
-        if self.redis.sismember('services:%s:%s' % (type, servicedate), service_id) == False:
-            return None
 
         service.service_id = service_id
         service.service_date = isodate.parse_date(servicedate)
 
         # Determine Redis key prefix:
-        key_prefix = 'service:%s:%s:%s' % (type, servicedate, service_id)
+        key_prefix = 'schedule:%s:%s:%s' % (type, servicedate, service_id)
 
         # Get metadata:
         service_data = self.redis.hgetall('%s:info' % key_prefix)
@@ -112,6 +134,7 @@ class ServiceStore(object):
         service.cancelled = (service_data['cancelled'] == 'True')
         service.transport_mode = service_data['transport_mode']
         service.transport_mode_description = service_data['transport_mode_description']
+        service.servicenumber = service_data['servicenumber']
 
         # Get stops:
         stops = self.redis.lrange('%s:stops' % key_prefix, 0, -1)

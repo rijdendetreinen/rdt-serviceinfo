@@ -58,14 +58,16 @@ class IffSource(object):
         metadata_set = False
 
         for row in cursor:
+            service.service_id = row[0]
             service.service_date = service_date
 
             if metadata_set == False:
-                if row[1] == 0:
-                    service.service_id = 'i%s' % row[0]
-                    __logger__.debug('Invalid service id, using %s for service %s', service.service_id, row[1])
-                else:
-                    service.service_id = row[1]
+                service.servicenumber = row[1]
+                if service.servicenumber == 0:
+                    service.servicenumber = 'i%s' % row[0]
+                    __logger__.debug(
+                        'Invalid service number, using %s for service %s',
+                        service.servicenumber, row[1])
 
                 service.transport_mode = row[8]
                 service.transport_mode_description = row[9]
