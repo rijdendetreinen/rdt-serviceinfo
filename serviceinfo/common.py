@@ -2,6 +2,7 @@ import logging.config
 import yaml
 import argparse
 import os
+import sys
 
 configuration = {}
 
