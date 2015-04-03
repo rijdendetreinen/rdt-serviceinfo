@@ -25,7 +25,7 @@ def parse_str_int(string):
         return int(string)
 
 
-def parse_sql_time(date, time):
+def parse_sql_time(date, time, timezone=None):
     """
     Parse a time returned by MySQLdb and combine the returned
     timedelta object with a given date.
@@ -35,7 +35,10 @@ def parse_sql_time(date, time):
     if time == None:
         return time
     else:
-        return datetime.datetime.combine(date, (datetime.datetime.min + time).time())
+        date = datetime.datetime.combine(date, (datetime.datetime.min + time).time())
+        if timezone != None:
+            date = timezone.localize(date)
+        return date
 
 def datetime_to_iso(datetime):
     if datetime == None:

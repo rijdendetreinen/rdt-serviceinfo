@@ -1,5 +1,6 @@
 import MySQLdb
 import logging
+import pytz
 
 import data
 import util
@@ -7,8 +8,12 @@ import util
 __logger__ = logging.getLogger(__name__)
 
 class IffSource(object):
+    timezone = None
+    connection = None
+
     def __init__(self, config):
         self.connection = MySQLdb.connect(host=config['host'], user=config['user'], passwd=config['password'], db=config['database'])
+        self.timezone = pytz.timezone('Europe/Amsterdam')
 
 
     def get_services_date(self, service_date):
@@ -76,8 +81,8 @@ class IffSource(object):
 
             stop = data.ServiceStop(row[2].lower())
             stop.stop_name = row[3]
-            stop.arrival_time = util.parse_sql_time(service_date, row[4])
-            stop.departure_time = util.parse_sql_time(service_date, row[5])
+            stop.arrival_time = util.parse_sql_time(service_date, row[4], self.timezone)
+            stop.departure_time = util.parse_sql_time(service_date, row[5], self.timezone)
             stop.scheduled_arrival_platform = row[6]
             stop.scheduled_departure_platform = row[7]
             stop.servicenumber = row[1]
