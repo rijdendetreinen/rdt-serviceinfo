@@ -15,7 +15,8 @@ def parse_arnu_message(data, iff):
     try:
         root = ET.fromstring(data)
     except ET.ParseError as exception:
-        __logger__.error("Kan XML niet parsen: %s", exception)
+        __logger__.error("Can't parse ARNU XML message: %s", exception)
+        return None
 
     # Zoek belangrijke nodes op:
     service_info_lijst = root.find('ServiceInfoList')
