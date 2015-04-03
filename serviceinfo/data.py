@@ -39,6 +39,7 @@ class ServiceStop(object):
     arrival_delay = 0
     cancelled_arrival = False
     cancelled_departure = False
+    servicenumber = 0
 
     def __init__(self, stop_code):
         self.stop_code = stop_code

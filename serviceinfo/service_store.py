@@ -69,7 +69,9 @@ class ServiceStore(object):
                          'departure_delay': stop.departure_delay,
                          'stop_name': stop.stop_name,
                          'cancelled_arrival': stop.cancelled_arrival,
-                         'cancelled_departure': stop.cancelled_departure}
+                         'cancelled_departure': stop.cancelled_departure,
+                         'servicenumber': stop.servicenumber,
+                         }
 
             for k,v in stop_data.iteritems():
                 if v == None:
@@ -162,6 +164,7 @@ class ServiceStore(object):
             service_stop.departure_delay = util.parse_str_int(data['departure_delay'])
             service_stop.cancelled_arrival = (data['cancelled_arrival'] == 'True')
             service_stop.cancelled_departure = (data['cancelled_departure'] == 'True')
+            service_stop.servicenumber = data['servicenumber']
 
             service.stops.append(service_stop)
 

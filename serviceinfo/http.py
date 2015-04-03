@@ -54,7 +54,8 @@ def service_stops_to_dict(stops):
             'arrival_delay': stop.arrival_delay,
             'departure_delay': stop.departure_delay,
             'cancelled_arrival': stop.cancelled_arrival,
-            'cancelled_departure': stop.cancelled_departure
+            'cancelled_departure': stop.cancelled_departure,
+            'servicenumber': stop.servicenumber
         }
 
         data.append(stop_data)
