@@ -1,5 +1,6 @@
 import MySQLdb
 import logging
+import pytz
 
 import data
 import util
@@ -7,8 +8,12 @@ import util
 __logger__ = logging.getLogger(__name__)
 
 class IffSource(object):
+    timezone = None
+    connection = None
+
     def __init__(self, config):
         self.connection = MySQLdb.connect(host=config['host'], user=config['user'], passwd=config['password'], db=config['database'])
+        self.timezone = pytz.timezone('Europe/Amsterdam')
 
 
     def get_services_date(self, service_date):
@@ -28,8 +33,9 @@ class IffSource(object):
 
 
     def get_service_details(self, service_id, service_date):
-        service = data.Service()
-
+        servicenumbers = []
+        services = []
+        
         cursor = self.connection.cursor()
         cursor.execute("""
             SELECT ts.serviceid, t_sv.servicenumber, ts.station, s.name, ts.arrivaltime, ts.departuretime,
@@ -56,32 +62,60 @@ class IffSource(object):
             return None
 
         metadata_set = False
+        servicenumber = 0
+        stops = []
 
+        # Retrieve all stops for this service:
         for row in cursor:
-            service.service_date = service_date
+            servicenumber = row[1]
+
+            # Add servicenumber to list if it doesn't exist already
+            if servicenumber not in servicenumbers:
+                servicenumbers.append(servicenumber)
 
             if metadata_set == False:
-                if row[1] == 0:
-                    service.service_id = 'i%s' % row[0]
-                    __logger__.debug('Invalid service id, using %s for service %s', service.service_id, row[1])
-                else:
-                    service.service_id = row[1]
-
-                service.transport_mode = row[8]
-                service.transport_mode_description = row[9]
+                transport_mode = row[8]
+                transport_mode_description = row[9]
 
                 metadata_set = True
 
             stop = data.ServiceStop(row[2].lower())
             stop.stop_name = row[3]
-            stop.arrival_time = util.parse_sql_time(service_date, row[4])
-            stop.departure_time = util.parse_sql_time(service_date, row[5])
+            stop.arrival_time = util.parse_sql_time(service_date, row[4], self.timezone)
+            stop.departure_time = util.parse_sql_time(service_date, row[5], self.timezone)
             stop.scheduled_arrival_platform = row[6]
             stop.scheduled_departure_platform = row[7]
+            stop.servicenumber = row[1]
 
-            service.stops.append(stop)
+            # Check whether previous stop is not the same stop
+            # (preventing duplicate stops):
+            if len(stops) > 0 and stops[-1].stop_code == stop.stop_code:
+                # Remove previous stop:
+                stops.pop()
 
-        return service
+            stops.append(stop)
+
+        # Create a Service object for every servicenumber:
+        for servicenumber in servicenumbers:
+            service = data.Service()
+
+            service.service_date = service_date
+            service.service_id = service_id
+            service.servicenumber = servicenumber
+            service.transport_mode = transport_mode
+            service.transport_mode_description = transport_mode_description
+
+            # Transform invalid servicenumbers to IFF ID:
+            if service.servicenumber == 0:
+                service.servicenumber = 'i%s' % service_id
+                __logger__.debug(
+                    'Invalid service number, using %s for service %s',
+                    service.servicenumber, service_id)
+
+            service.stops = stops
+            services.append(service)
+
+        return services
 
 
     def get_services_details(self, service_ids, service_date):
@@ -90,7 +124,7 @@ class IffSource(object):
         for service_id in service_ids:
             service = self.get_service_details(service_id, service_date)
             if (service != None):
-                services.append(service)
+                services.extend(service)
             else:
                 __logger__.warning('Skipping service %s', service_id)
 

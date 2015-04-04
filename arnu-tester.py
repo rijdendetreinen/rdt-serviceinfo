@@ -41,17 +41,23 @@ def load_dummy_messages(filename):
 
     logger.info('Loading message dump')
 
+    line_counter = 0
     msg_counter = 0
     service_counter = 0
 
     try:
         with open(filename, 'r') as f:
             for line in f:
-                msg_counter = msg_counter + 1
+                line_counter = line_counter + 1
                 services = serviceinfo.arnu.parse_arnu_message(line, iff)
-                for service in services:
-                    service_counter = service_counter + 1
-                    store.store_service(service, store.TYPE_ACTUAL)
+
+                if services == None:
+                    logger.warning('Could not process line %s', line_counter)
+                else:
+                    msg_counter = msg_counter + 1
+                    for service in services:
+                        service_counter = service_counter + 1
+                        store.store_service(service, store.TYPE_ACTUAL)
 
         logger.info('Finished processing %s services from %s ARNU messages' % (service_counter, msg_counter))
     except IOError as e:

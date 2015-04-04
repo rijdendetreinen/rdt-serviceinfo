@@ -8,23 +8,32 @@ import util
 @bottle.route('/service/<servicedate>/<serviceid>')
 def index(servicedate, serviceid):
     store = service_store.ServiceStore(common.configuration['schedule_store'])
-    service = store.get_service(servicedate, serviceid)
+    services = store.get_service(servicedate, serviceid)
 
-    if service == None:
+    if services == None:
         abort(404, "Service not found")
     else:
-        return service_to_dict(service)
+        return services_to_dict(services)
 
 
-def service_to_dict(service):
+def services_to_dict(services):
     data = {
-        'service': service.service_id,
-        'cancelled': service.cancelled,
-        'transport_mode': service.transport_mode,
-        'transport_mode_description': service.transport_mode_description,
-        'servicedate': service.get_servicedate_str(),
-        'stops': service_stops_to_dict(service.stops)
+        'services': []
     }
+
+    for service in services:
+        service_data = {
+            'service': service.servicenumber,
+            'service_id': service.service_id,
+            'cancelled': service.cancelled,
+            'transport_mode': service.transport_mode,
+            'transport_mode_description': service.transport_mode_description,
+            'servicedate': service.get_servicedate_str(),
+            'stops': service_stops_to_dict(service.stops),
+            'destination': service.get_destination_str()
+        }
+
+        data['services'].append(service_data)
 
     return data
 
@@ -45,7 +54,8 @@ def service_stops_to_dict(stops):
             'arrival_delay': stop.arrival_delay,
             'departure_delay': stop.departure_delay,
             'cancelled_arrival': stop.cancelled_arrival,
-            'cancelled_departure': stop.cancelled_departure
+            'cancelled_departure': stop.cancelled_departure,
+            'servicenumber': stop.servicenumber
         }
 
         data.append(stop_data)
