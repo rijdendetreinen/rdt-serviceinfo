@@ -23,7 +23,6 @@ import os
 import logging
 import logging.config
 import yaml
-import argparse
 import bottle
 
 import serviceinfo.common
@@ -31,21 +30,8 @@ import serviceinfo.iff
 import serviceinfo.service_store
 import serviceinfo.http
 
-# Initialiseer argparse
-parser = argparse.ArgumentParser(description='HTTP test tool')
-
-parser.add_argument('-c', '--config', dest='configFile', default='config/serviceinfo.yaml',
-    action='store', help='Configuration file')
-
-args = parser.parse_args()
-
 # Load configuration:
-serviceinfo.common.load_config(args.configFile)
+serviceinfo.common.load_config(sys.argv[1])
 serviceinfo.common.setup_logging()
 
-# Get logger instance:
-logger = logging.getLogger(__name__)
-logger.info('HTTP server starting')
-
-bottle.debug(True)
-bottle.run(host='0.0.0.0', port=8080, reloader=True)
+application = bottle.default_app()
