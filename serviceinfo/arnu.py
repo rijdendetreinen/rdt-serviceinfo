@@ -47,7 +47,8 @@ def parse_arnu_service(service_info, iff):
 
         # Determine servicedate based on first stop (may include cancelled stops):
         if service_date == None:
-            service_date = util.parse_iso_datetime(stop_info.findtext('Departure')).date()
+            service_date = util.parse_iso_datetime(stop_info.findtext('Departure'))
+            service_date = util.get_service_date(service_date)
 
         # Add servicenumber to list if it doesn't exist already
         servicenumber = stop_info.findtext('StopServiceCode')

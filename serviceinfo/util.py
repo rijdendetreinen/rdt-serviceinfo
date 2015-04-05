@@ -1,3 +1,10 @@
+"""
+Utility methods and functions
+
+Utility methods and functions, like methods for parsing SQL datetimes
+and magic for determining the correct servicedate for a given datetime.
+"""
+
 import datetime
 import isodate
 
@@ -40,8 +47,24 @@ def parse_sql_time(date, time, timezone=None):
             date = timezone.localize(date)
         return date
 
+
 def datetime_to_iso(datetime):
     if datetime == None:
         return None
     else:
         return datetime.isoformat()
+
+
+def get_service_date(date_time):
+    """
+    Retrieve a sensible servicedate for a given datetime.
+    The logic is as follows: if the time is before
+    4.00 (AM), the service date is the previous day.
+
+    Returns a date object.
+    """
+
+    if date_time.time() < datetime.time(4, 0):
+        return date_time.date() - datetime.timedelta(days=1)
+    else:
+        return date_time.date()
