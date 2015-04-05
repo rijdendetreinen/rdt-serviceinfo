@@ -9,6 +9,11 @@ import datetime
 import isodate
 
 def parse_iso_datetime(datetime_string):
+    """
+    Concert a string in ISO time format to a datetime object.
+    Returns None when the string is empty or is None.
+    """
+
     if datetime_string == None or len(datetime_string) == 0:
         return None
     else:
@@ -16,6 +21,12 @@ def parse_iso_datetime(datetime_string):
 
 
 def parse_iso_delay(delay_string):
+    """
+    Concert a string in ISO time duration format to a integer
+    (containing the duration in minutes).
+    Returns None when the string is empty or is None.
+    """
+
     if delay_string == None:
         return 0
     else:
@@ -26,6 +37,11 @@ def parse_iso_delay(delay_string):
 
 
 def parse_str_int(string):
+    """
+    Convert a string to an integer.
+    Empty strings or None are converted to 0.
+    """
+
     if string == None or string == '':
         return 0
     else:
@@ -39,20 +55,27 @@ def parse_sql_time(date, time, timezone=None):
 
     Returns None when time is None.
     """
+
     if time == None:
         return time
     else:
-        date = datetime.datetime.combine(date, (datetime.datetime.min + time).time())
+        date = datetime.datetime.combine(date,
+            (datetime.datetime.min + time).time())
         if timezone != None:
             date = timezone.localize(date)
         return date
 
 
-def datetime_to_iso(datetime):
-    if datetime == None:
+def datetime_to_iso(date_time):
+    """
+    Convert a datetime object to a string in ISO time format.
+    Returns None when date_time is None.
+    """
+
+    if date_time == None:
         return None
     else:
-        return datetime.isoformat()
+        return date_time.isoformat()
 
 
 def get_service_date(date_time):
