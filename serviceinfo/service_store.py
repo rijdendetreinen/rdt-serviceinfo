@@ -112,6 +112,30 @@ class ServiceStore(object):
             self.store_service(service, service_type)
 
 
+    def get_service_numbers(self, servicedate, service_type=TYPE_ACTUAL_OR_SCHEDULED):
+        """
+        Retrieve all service numbers for a given date
+
+        Args:
+            servicedate (datetime.date): Service date
+            type (string, optional): Store type
+                (default: both actual and scheduled)
+
+        Returns:
+            list: List of servicenumbers
+        """
+
+        if service_type == self.TYPE_ACTUAL_OR_SCHEDULED:
+            # Combine actual and scheduled service numbers:
+            key1 = 'services:%s:%s' % (self.TYPE_ACTUAL, servicedate)
+            key2 = 'services:%s:%s' % (self.TYPE_SCHEDULED, servicedate)
+            return list(self.redis.sunion(key1, key2))
+        else:
+            # Retrieve all service numbers for the given date and service_type:
+            key = 'services:%s:%s' % (service_type, servicedate)
+            return list(self.redis.smembers(key))
+
+
     def get_service(self, servicedate, servicenumber, service_type=TYPE_ACTUAL_OR_SCHEDULED):
         """
         Get details for a given servicenumber on a given date.
@@ -121,6 +145,10 @@ class ServiceStore(object):
             servicenumber (int): Service number (e.g. train 1750)
             type (string, optional): Store type (default: actual if available,
                 otherwise scheduled)
+
+        Returns:
+            list: List of service objects (may be more than one for services
+                with multiple servicenumbers)
         """
 
         if service_type == self.TYPE_ACTUAL_OR_SCHEDULED:
@@ -155,6 +183,9 @@ class ServiceStore(object):
                 the servicenumber of a service
             type (string, optional): Store type (default: actual if available,
                 otherwise scheduled)
+
+        Returns:
+            serviceinfo.data.Service: Service object
         """
 
         if service_type == self.TYPE_ACTUAL_OR_SCHEDULED:

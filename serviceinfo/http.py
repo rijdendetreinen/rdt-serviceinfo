@@ -13,8 +13,23 @@ import serviceinfo.service_store as service_store
 import serviceinfo.common as common
 import serviceinfo.util as util
 
+@bottle.route('/service/<servicedate>')
+def get_services(servicedate):
+    """
+    Retrieve a list of all services on a given date
+    """
+
+    store = service_store.ServiceStore(common.configuration['schedule_store'])
+    services = store.get_service_numbers(servicedate)
+
+    if bottle.request.query.get('sort') == 'true':
+        services = sorted(services)
+
+    return {'services': services}
+
+
 @bottle.route('/service/<servicedate>/<service_number>')
-def index(servicedate, service_number):
+def get_service_details(servicedate, service_number):
     """
     Main method to retrieve information about a service.
     """
@@ -30,8 +45,11 @@ def index(servicedate, service_number):
 
 @error(404)
 def error404(error_object):
-    response.content_type = 'application/json'
+    """
+    404 JSON error
+    """
 
+    response.content_type = 'application/json'
     return json.dumps({'error': '404', 'message': error_object.body})
 
 
