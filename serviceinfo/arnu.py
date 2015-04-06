@@ -13,6 +13,7 @@ import serviceinfo.data as data
 # Setup a logger object:
 __logger__ = logging.getLogger(__name__)
 
+
 def parse_arnu_message(message, iff):
     """
     Parse an ARNU message
@@ -37,19 +38,31 @@ def parse_arnu_message(message, iff):
     service_info_items = service_info_lijst.findall('ServiceInfo')
 
     services = []
+    parsed_servicenumbers = []
 
+    # Parse each service message and append them to a list of updated services:
     for service_info_item in service_info_items:
-        services.extend(_parse_arnu_service(service_info_item, iff))
+        parsed_services = _parse_arnu_service(service_info_item, iff,
+            parsed_servicenumbers)
+
+        services.extend(parsed_services)
+
+        for parsed_service in parsed_services:
+            parsed_servicenumbers.append(parsed_service.servicenumber)
 
     return services
 
-def _parse_arnu_service(service_info, iff):
+
+def _parse_arnu_service(service_info, iff, parsed_servicenumbers):
     """
     Internal method to parse an ARNU service
 
     Args:
         service_info (xml.etree.ElementTree.Element): XML element for a service
         iff (serviceinfo.iff.IffSource): IFF source
+        parsed_servicenumbers (list): List of servicenumbers already used in
+            the ARNU message (to prevent services in one message overwriting
+            each other)
 
     Returns:
         list: List of serviceinfo.data.Service objects
@@ -127,6 +140,10 @@ def _parse_arnu_service(service_info, iff):
     # Create a Service object for every servicenumber:
     for servicenumber in servicenumbers:
         service = data.Service()
+
+        if servicenumber in parsed_servicenumbers:
+            __logger__.debug('Train %s already parsed in message', servicenumber)
+            service_id = "%s-%s" % (servicenumber, stops[-1].stop_code)
 
         service.service_date = service_date
         service.service_id = service_id

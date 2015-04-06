@@ -72,7 +72,7 @@ def services_to_dict(services):
 
     for service in services:
         service_data = {
-            'service': service.servicenumber,
+            'service_number': service.servicenumber,
             'service_id': service.service_id,
             'cancelled': service.cancelled,
             'transport_mode': service.transport_mode,
