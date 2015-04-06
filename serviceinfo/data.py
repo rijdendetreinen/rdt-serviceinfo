@@ -19,6 +19,9 @@ class Service(object):
     transport_mode = None
     transport_mode_description = None
 
+    # Used by ServiceStore to specifiy data source, defaults to None:
+    source = None
+
     def __init__(self):
         self.stops = []
 

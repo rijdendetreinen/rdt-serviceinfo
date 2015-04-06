@@ -71,7 +71,8 @@ def services_to_dict(services):
             'transport_mode_description': service.transport_mode_description,
             'servicedate': service.get_servicedate_str(),
             'stops': service_stops_to_dict(service.stops),
-            'destination': service.get_destination_str()
+            'destination': service.get_destination_str(),
+            'source': service.source
         }
 
         data['services'].append(service_data)

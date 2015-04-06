@@ -199,6 +199,7 @@ class ServiceStore(object):
 
         service.service_id = service_id
         service.service_date = isodate.parse_date(servicedate)
+        service.source = service_type
 
         # Determine Redis key prefix:
         key_prefix = 'schedule:%s:%s:%s' % (service_type, servicedate, service_id)
