@@ -1,16 +1,33 @@
+"""
+ARNU message parser
+
+Module containing various methods for parsing ARNU XML messages.
+"""
+
 import xml.etree.cElementTree as ET
 import logging
 
 import serviceinfo.util as util
 import serviceinfo.data as data
 
-# Vraag een logger object:
+# Setup a logger object:
 __logger__ = logging.getLogger(__name__)
 
-def parse_arnu_message(data, iff):
+def parse_arnu_message(message, iff):
+    """
+    Parse an ARNU message
+
+    Args:
+        message (string): XML message
+        iff (serviceinfo.iff.IffSource): IFF source
+
+    Returns:
+        list: List of serviceinfo.data.Service objects
+    """
+
     # Parse XML:
     try:
-        root = ET.fromstring(data)
+        root = ET.fromstring(message)
     except ET.ParseError as exception:
         __logger__.error("Can't parse ARNU XML message: %s", exception)
         return None
@@ -22,11 +39,22 @@ def parse_arnu_message(data, iff):
     services = []
 
     for service_info_item in service_info_items:
-        services.extend(parse_arnu_service(service_info_item, iff))
+        services.extend(_parse_arnu_service(service_info_item, iff))
 
     return services
 
-def parse_arnu_service(service_info, iff):
+def _parse_arnu_service(service_info, iff):
+    """
+    Internal method to parse an ARNU service
+
+    Args:
+        service_info (xml.etree.ElementTree.Element): XML element for a service
+        iff (serviceinfo.iff.IffSource): IFF source
+
+    Returns:
+        list: List of serviceinfo.data.Service objects
+    """
+
     servicenumbers = []
     services = []
 

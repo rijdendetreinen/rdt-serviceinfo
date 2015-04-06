@@ -1,14 +1,25 @@
+"""
+HTTP interface
+
+HTTP interface for retrieving service information. Uses bottle for handling
+HTTP requests and automatic conversion from dicts to JSON.
+"""
+
 import bottle
-from bottle import response, abort
+from bottle import abort
 
-import service_store
-import common
-import util
+import serviceinfo.service_store as service_store
+import serviceinfo.common as common
+import serviceinfo.util as util
 
-@bottle.route('/service/<servicedate>/<serviceid>')
-def index(servicedate, serviceid):
+@bottle.route('/service/<servicedate>/<service_number>')
+def index(servicedate, service_number):
+    """
+    Main method to retrieve information about a service.
+    """
+
     store = service_store.ServiceStore(common.configuration['schedule_store'])
-    services = store.get_service(servicedate, serviceid)
+    services = store.get_service(servicedate, service_number)
 
     if services == None:
         abort(404, "Service not found")
@@ -17,6 +28,10 @@ def index(servicedate, serviceid):
 
 
 def services_to_dict(services):
+    """
+    Internal method to convert a Service object to a dictionary.
+    """
+
     data = {
         'services': []
     }
@@ -39,6 +54,10 @@ def services_to_dict(services):
 
 
 def service_stops_to_dict(stops):
+    """
+    Internal method to convert a list of ServiceStop object to a dictionary.
+    """
+
     data = []
 
     for stop in stops:

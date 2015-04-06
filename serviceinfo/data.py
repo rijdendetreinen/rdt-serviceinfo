@@ -1,4 +1,16 @@
+"""
+Data objects
+
+Module containing import object types used throughout the serviceinfo package.
+"""
+
 class Service(object):
+    """
+    Service describes an unique transportation service on a certain date.
+    Each service has an ID, a servicenumber, two or more stops and metadata,
+    like cancellation status or the mode of transportation.
+    """
+
     service_id = 0
     servicenumber = 0
     cancelled = False
@@ -16,16 +28,34 @@ class Service(object):
             self.get_servicedate_str(), len(self.stops))
 
     def get_servicedate_str(self):
+        """
+        Retrieve the servicedate as a string in YYYY-MM-DD format.
+        """
+
         return self.service_date.strftime('%Y-%m-%d')
 
     def get_destination(self):
+        """
+        Retrieve the last stop for this service.
+        """
+
         return self.stops[-1]
 
     def get_destination_str(self):
+        """
+        Retrieve the stop code of the last stop for this service.
+        """
+
         return self.get_destination().stop_code
 
 
 class ServiceStop(object):
+    """
+    ServiceStop objects describe one single stop of a service.
+    A ServiceStop contains data like the stop_code and stop_name of a station,
+    arrival- and departure date/time, cancellation status, etc.
+    """
+
     service_id = 0
     stop_code = None
     stop_name = None
@@ -46,9 +76,3 @@ class ServiceStop(object):
 
     def __repr__(self):
         return "<ServiceStop @ %s>" % self.stop_code
-
-    def is_arrival_platform_changed(self):
-        return (self.actual_arrival_platform != self.scheduled_arrival_platform)
-
-    def is_departure_platform_changed(self):
-        return (self.actual_departure_platform != self.scheduled_departure_platform)
