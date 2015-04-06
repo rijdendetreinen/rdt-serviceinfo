@@ -6,7 +6,8 @@ HTTP requests and automatic conversion from dicts to JSON.
 """
 
 import bottle
-from bottle import abort
+import json
+from bottle import abort, response, error
 
 import serviceinfo.service_store as service_store
 import serviceinfo.common as common
@@ -25,6 +26,13 @@ def index(servicedate, service_number):
         abort(404, "Service not found")
     else:
         return services_to_dict(services)
+
+
+@error(404)
+def error404(error_object):
+    response.content_type = 'application/json'
+
+    return json.dumps({'error': '404', 'message': error_object.body})
 
 
 def services_to_dict(services):

@@ -32,7 +32,7 @@ def parse_arnu_message(message, iff):
         __logger__.error("Can't parse ARNU XML message: %s", exception)
         return None
 
-    # Zoek belangrijke nodes op:
+    # Search ServiceInfoList/ServiceInfo nodes (containing all ARNU services):
     service_info_lijst = root.find('ServiceInfoList')
     service_info_items = service_info_lijst.findall('ServiceInfo')
 
