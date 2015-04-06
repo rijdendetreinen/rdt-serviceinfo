@@ -20,7 +20,15 @@ def get_services(servicedate):
     """
 
     store = service_store.ServiceStore(common.configuration['schedule_store'])
-    services = store.get_service_numbers(servicedate)
+
+    service_type = store.TYPE_ACTUAL_OR_SCHEDULED
+
+    if bottle.request.query.get('type') == 'actual':
+        service_type = store.TYPE_ACTUAL
+    elif bottle.request.query.get('type') == 'scheduled':
+        service_type = store.TYPE_SCHEDULED
+
+    services = store.get_service_numbers(servicedate, service_type)
 
     if bottle.request.query.get('sort') == 'true':
         services = sorted(services)
