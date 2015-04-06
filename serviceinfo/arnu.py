@@ -141,7 +141,7 @@ def _parse_arnu_service(service_info, iff, parsed_service_ids):
     for servicenumber in servicenumbers:
         service = data.Service()
 
-        service_id = "%s-%s" % (servicenumber, stops[-1].stop_code)
+        service_id = "%s-%s-%s" % (servicenumber, stops[0].stop_code, stops[-1].stop_code)
 
         if service_id in parsed_service_ids:
             __logger__.warning('Service ID %s already in use', service_id)
