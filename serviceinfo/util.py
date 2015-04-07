@@ -60,7 +60,8 @@ def parse_sql_time(date, time, timezone=None):
         return time
     else:
         date = datetime.datetime.combine(date,
-            (datetime.datetime.min + time).time())
+            datetime.datetime.min.time()) + time
+
         if timezone != None:
             date = timezone.localize(date)
         return date
