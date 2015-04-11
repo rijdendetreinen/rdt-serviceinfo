@@ -46,11 +46,19 @@ class ServiceStore(object):
         self.redis.sadd('services:%s:date' % service_type,
             service.get_servicedate_str())
 
-        # service_type=schedule or actual
-        #
-        # TODO: check/remove existing key?
+        # Add service:
         self.redis.sadd('services:%s:%s' % (service_type,
             service.get_servicedate_str()), service.servicenumber)
+
+        # Check whether service did already exist:
+        if self.redis.sismember('services:%s:%s:%s' % (service_type,
+            service.get_servicedate_str(), service.servicenumber),
+            service.service_id):
+            # Remove service details:
+            self._delete_service_id(service.get_servicedate_str(),
+                service.service_id, service_type)
+
+        # Add service details:
         self.redis.sadd('services:%s:%s:%s' % (service_type,
             service.get_servicedate_str(), service.servicenumber),
             service.service_id)
