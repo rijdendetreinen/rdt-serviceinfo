@@ -257,6 +257,66 @@ class ServiceStore(object):
         return service
 
 
+    def delete_service(self, servicedate, servicenumber, store_type):
+        """
+        Delete a service from the service store
+        
+        Args:
+            servicedate (string): Service date in YYYY-MM-DD format
+            servicenumber (string): Service number
+            store_type (string): Store type (actual or scheduled)
+        """
+
+        # Check whether service number exists:
+        if self.redis.sismember('services:%s:%s' %
+            (store_type, servicedate), servicenumber) == False:
+            return False
+
+        # Retrieve all services for this servicenumber:
+        service_ids = self.redis.smembers('services:%s:%s:%s' % (store_type,
+            servicedate, servicenumber))
+
+        # Iterate over service ID's, delete them one by one:
+        for service_id in service_ids:
+            # Delete service details for service ID:
+            self._delete_service_id(servicedate, service_id, store_type)
+
+        # Delete service information:
+        self.redis.delete('services:%s:%s:%s' % (store_type, servicedate,
+            servicenumber))
+
+        self.redis.srem('services:%s:%s' % (store_type, servicedate),
+            servicenumber)
+
+        # Check whether servicedate can be removed:
+        if not self.redis.exists('services:%s:%s' % (store_type, servicedate)):
+            # Service date not in use anymore, delete it:
+            self.redis.srem('services:%s:date' % store_type, servicedate)
+
+        return True
+
+
+    def _delete_service_id(self, servicedate, service_id, store_type):
+        """
+        Internal method to delete service details from the service store
+        """
+
+        # Determine Redis key prefix:
+        key_prefix = 'schedule:%s:%s:%s' %(store_type,
+            servicedate, service_id)
+
+        # Get stops:
+        stops = self.redis.lrange('%s:stops' % key_prefix, 0, -1)
+
+        for stop in stops:
+            # Delete stop information:
+            self.redis.delete('%s:stops:%s' % (key_prefix, stop))
+
+        # Delete other information for this service:
+        self.redis.delete('%s:stops' % key_prefix)
+        self.redis.delete('%s:info' % key_prefix)
+
+
     def get_service_dates(self, store_type=TYPE_ACTUAL_OR_SCHEDULED):
         """
         Retrieve all service dates for a given store type
