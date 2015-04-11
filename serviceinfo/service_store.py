@@ -42,6 +42,10 @@ class ServiceStore(object):
         Existing information for a service is updated.
         """
 
+        # Add the servicedate:
+        self.redis.sadd('services:%s:date' % service_type,
+            service.get_servicedate_str())
+
         # service_type=schedule or actual
         #
         # TODO: check/remove existing key?
@@ -251,3 +255,26 @@ class ServiceStore(object):
             service.stops.append(service_stop)
 
         return service
+
+
+    def get_service_dates(self, store_type=TYPE_ACTUAL_OR_SCHEDULED):
+        """
+        Retrieve all service dates for a given store type
+
+        Args:
+            store_type (string, optional): Store type
+                (default: both actual and scheduled)
+
+        Returns:
+            list: List of service dates (YYYY-MM-DD strings)
+        """
+
+        if store_type == self.TYPE_ACTUAL_OR_SCHEDULED:
+            # Combine actual and scheduled service dates:
+            key1 = 'services:%s:date' % self.TYPE_ACTUAL
+            key2 = 'services:%s:date' % self.TYPE_SCHEDULED
+            return list(self.redis.sunion(key1, key2))
+        else:
+            # Retrieve all service dates for the given store_type:
+            key = 'services:%s:date' % store_type
+            return list(self.redis.smembers(key))
