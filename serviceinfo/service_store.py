@@ -33,7 +33,7 @@ class ServiceStore(object):
             port=config['port'], db=config['database'])
 
 
-    def store_service(self, service, type):
+    def store_service(self, service, service_type):
         """
         Store a service to the service store.
         The type determines whether the service is scheduled (TYPE_SCHEDULED)
@@ -42,15 +42,18 @@ class ServiceStore(object):
         Existing information for a service is updated.
         """
 
-        # type=schedule or actual
+        # service_type=schedule or actual
         #
         # TODO: check/remove existing key?
-        self.redis.sadd('services:%s:%s' % (type, service.get_servicedate_str()), service.servicenumber)
-        self.redis.sadd('services:%s:%s:%s' % (type, service.get_servicedate_str(), service.servicenumber),
+        self.redis.sadd('services:%s:%s' % (service_type,
+            service.get_servicedate_str()), service.servicenumber)
+        self.redis.sadd('services:%s:%s:%s' % (service_type,
+            service.get_servicedate_str(), service.servicenumber),
             service.service_id)
 
         # Determine Redis key prefix:
-        key_prefix = 'schedule:%s:%s:%s' % (type, service.get_servicedate_str(), service.service_id)
+        key_prefix = 'schedule:%s:%s:%s' % (service_type,
+            service.get_servicedate_str(), service.service_id)
 
         # Store service information:
         self.redis.delete('%s:info' % key_prefix)
@@ -93,11 +96,16 @@ class ServiceStore(object):
                          'servicenumber': stop.servicenumber,
                          }
 
-            for k,v in stop_data.iteritems():
-                if v == None:
-                    stop_data[k] = ''
+            # Translate None to empty strings:
+            for key, value in stop_data.iteritems():
+                if value == None:
+                    stop_data[key] = ''
 
-            self.redis.hmset('%s:stops:%s' % (key_prefix, stop.stop_code.lower()), stop_data)
+            # Add stop to Redis:
+            self.redis.hmset('%s:stops:%s' % (key_prefix,
+                stop.stop_code.lower()), stop_data)
+
+        return
 
 
     def store_services(self, services, service_type):
