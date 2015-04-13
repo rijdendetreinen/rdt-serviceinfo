@@ -77,6 +77,8 @@ def services_to_dict(services):
             'cancelled': service.cancelled,
             'transport_mode': service.transport_mode,
             'transport_mode_description': service.transport_mode_description,
+            'company': service.company_code,
+            'company_name': service.company_name,
             'servicedate': service.get_servicedate_str(),
             'stops': service_stops_to_dict(service.stops),
             'destination': service.get_destination_str(),

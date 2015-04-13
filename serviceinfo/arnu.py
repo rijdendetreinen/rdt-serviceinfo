@@ -73,6 +73,8 @@ def _parse_arnu_service(service_info, iff, parsed_service_ids):
 
     # Generic metadata about the service:
     service_id = service_info.find('ServiceCode').text
+    company_code = service_info.findtext('CompanyCode')
+    company_name = iff.get_company_name(company_code)
     transport_mode = service_info.find('TransportModeCode').text
     transport_mode_description = iff.get_transport_mode(transport_mode)
     service_date = None
@@ -149,6 +151,8 @@ def _parse_arnu_service(service_info, iff, parsed_service_ids):
         service.service_date = service_date
         service.service_id = service_id
         service.servicenumber = servicenumber
+        service.company_code = company_code
+        service.company_name = company_name
         service.transport_mode = transport_mode
         service.transport_mode_description = transport_mode_description
         service.stops = stops

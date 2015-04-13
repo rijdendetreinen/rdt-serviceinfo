@@ -71,6 +71,8 @@ class ServiceStore(object):
         self.redis.delete('%s:info' % key_prefix)
 
         service_data = {'cancelled': service.cancelled,
+                        'company_code': service.company_code,
+                        'company_name': service.company_name,
                         'transport_mode': service.transport_mode,
                         'transport_mode_description': service.transport_mode_description,
                         'servicenumber': service.servicenumber,
@@ -228,6 +230,8 @@ class ServiceStore(object):
         service_data = self.redis.hgetall('%s:info' % key_prefix)
 
         service.cancelled = (service_data['cancelled'] == 'True')
+        service.company_code = service_data['company_code']
+        service.company_name = service_data['company_name']
         service.transport_mode = service_data['transport_mode']
         service.transport_mode_description = service_data['transport_mode_description']
         service.servicenumber = service_data['servicenumber']

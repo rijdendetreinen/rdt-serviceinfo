@@ -87,7 +87,8 @@ class IffSource(object):
         cursor.execute("""
             SELECT ts.serviceid, t_sv.servicenumber, ts.station, s.name, ts.arrivaltime, ts.departuretime,
                 p.arrival AS arrival_platform, p.departure AS departure_platform,
-                tt.transmode, tm.description AS transmode_description
+                tt.transmode, tm.description AS transmode_description,
+                c.code AS company_code, c.name AS company_name
 
             FROM timetable_stop ts
             JOIN station s ON ts.station = s.shortname
@@ -100,6 +101,7 @@ class IffSource(object):
             LEFT JOIN timetable_transport tt
                 ON (tt.serviceid = ts.serviceid AND tt.firststop <= ts.idx AND tt.laststop >= ts.idx)
             LEFT JOIN trnsmode tm ON (tt.transmode = tm.code)
+            LEFT JOIN company c ON (t_sv.companynumber = c.company)
             WHERE
                 ts.serviceid = %s
                 AND f_s.servicedate = %s
@@ -121,6 +123,8 @@ class IffSource(object):
                 servicenumbers.append(servicenumber)
 
             if metadata_set == False:
+                company_code = row[10]
+                company_name = row[11]
                 transport_mode = row[8]
                 transport_mode_description = row[9]
 
@@ -151,6 +155,8 @@ class IffSource(object):
             service.servicenumber = servicenumber
             service.transport_mode = transport_mode
             service.transport_mode_description = transport_mode_description
+            service.company_code = company_code
+            service.company_name = company_name
 
             # Transform invalid servicenumbers to IFF ID:
             if service.servicenumber == 0:
@@ -228,6 +234,31 @@ class IffSource(object):
         cursor.execute("""
             SELECT description FROM trnsmode
             WHERE code = %s;""", transport_mode)
+
+        if cursor.rowcount == 0:
+            return None
+
+        return cursor.fetchone()[0]
+
+
+    def get_company_name(self, company_code):
+        """
+        Get a company name from the IFF database.
+
+        Args:
+            company_code (string): Company code (e.g. 'nsi')
+
+        Returns:
+            string: Company name (e.g. 'NS International'),
+            or None when the station code is not found
+        """
+        if company_code == None:
+            return None
+
+        cursor = self.connection.cursor()
+        cursor.execute("""
+            SELECT name FROM company
+            WHERE code = %s;""", company_code)
 
         if cursor.rowcount == 0:
             return None
