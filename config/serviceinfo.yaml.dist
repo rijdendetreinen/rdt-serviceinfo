@@ -12,4 +12,22 @@ arnu_source:
     socket: tcp://127.0.0.1:12345
 logging:
     log_config: config/logging.yaml
+scheduler:
+    filter:
+        exclude:
+            company:
+                - db
+                - nmbs
+                - thalys
+                - est
+        include:
+            service:
+                # NMBS:
+                - [2500, 2599]
+                # DB:
+                - [300, 499]
+                - [20180, 20199]
+                - [20200, 20299]
+                - [11900, 11999]
+                - [11000, 11099]
 ...

@@ -85,6 +85,35 @@ def load_schedule(service_date):
 
     return schedule
 
+def filter_schedule(schedule, filter_config):
+    """
+    Filter the list of scheduled services according to the configuration
+    """
+
+    logger = logging.getLogger(__name__)
+    logger.info('Filtering schedule')
+
+    filtered_schedule = []
+
+    for service in schedule:
+        exclude_service = False
+
+        if service.match_filter(filter_config['exclude']):
+            exclude_service = True
+
+        if exclude_service:
+            # Check to whether still include this service:
+            if service.match_filter(filter_config['include']):
+                exclude_service = False
+
+        if not exclude_service:
+            filtered_schedule.append(service)
+        else:
+            logger.debug("Ignoring service %s/%s" % (service.company_code, service.servicenumber))
+
+    return filtered_schedule
+
+
 def store_schedule(schedule):
     """
     Store a schedule to the schedule store.
@@ -117,8 +146,8 @@ def main():
         default='config/serviceinfo.yaml',
         action='store', help='Configuration file')
 
-    parser.add_argument('-d', '--servicedate', dest='servicedate', default='TODAY',
-        action='store', help='Service date')
+    parser.add_argument('-d', '--servicedate', dest='servicedate',
+        default='TODAY', action='store', help='Service date')
 
     args = parser.parse_args()
 
@@ -137,6 +166,8 @@ def main():
         sys.exit(1)
 
     schedule = load_schedule(servicedate)
+    schedule = filter_schedule(schedule,
+        serviceinfo.common.configuration['scheduler']['filter'])
     store_schedule(schedule)
 
 if __name__ == "__main__":
