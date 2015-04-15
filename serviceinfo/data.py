@@ -53,6 +53,22 @@ class Service(object):
 
         return self.get_destination().stop_code
 
+    def match_filter(self, service_filter):
+        """
+        Returns True when the service matches one or more filter conditions.
+        """
+
+        if 'company' in service_filter:
+            if self.company_code.lower() in (x.lower() for x in service_filter['company']):
+                return True
+
+        if 'service' in service_filter:
+            for number_range in service_filter['service']:
+                if self.servicenumber >= number_range[0] and self.servicenumber <= number_range[1]:
+                    return True
+
+        return False
+
 
 class ServiceStop(object):
     """
