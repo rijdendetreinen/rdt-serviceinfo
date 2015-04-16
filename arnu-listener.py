@@ -115,7 +115,7 @@ def main():
     global config
 
     # Initialize argparse
-    parser = argparse.ArgumentParser(description='RDT IFF/ARNU listener')
+    parser = argparse.ArgumentParser(description='RDT Serviceinfo / ARNU realtime message processor')
 
     parser.add_argument('-c', '--config', dest='configFile', default='config/serviceinfo.yaml',
         action='store', help='Configuration file')

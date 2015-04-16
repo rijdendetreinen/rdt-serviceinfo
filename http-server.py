@@ -32,7 +32,7 @@ import serviceinfo.service_store
 import serviceinfo.http
 
 # Initialiseer argparse
-parser = argparse.ArgumentParser(description='HTTP test tool')
+parser = argparse.ArgumentParser(description='RDT Serviceinfo / HTTP Test Server')
 
 parser.add_argument('-c', '--config', dest='configFile', default='config/serviceinfo.yaml',
     action='store', help='Configuration file')

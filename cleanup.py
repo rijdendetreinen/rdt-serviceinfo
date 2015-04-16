@@ -69,7 +69,7 @@ def main():
 
     # Initialize argparse
     parser = argparse.ArgumentParser(
-        description='RDT IFF/ARNU cleanup tool')
+        description='RDT Serviceinfo / Cleanup tool')
 
     parser.add_argument('-c', '--config', dest='configFile',
         default='config/serviceinfo.yaml',

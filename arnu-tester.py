@@ -73,7 +73,7 @@ def main():
     global config
 
     # Initialize argparse
-    parser = argparse.ArgumentParser(description='RDT IFF/ARNU test tool')
+    parser = argparse.ArgumentParser(description='RDT Serviceinfo / ARNU realtime message tester')
 
     parser.add_argument('-c', '--config', dest='configFile', default='config/serviceinfo.yaml',
         action='store', help='Configuration file')

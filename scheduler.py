@@ -140,7 +140,7 @@ def main():
 
     # Initialize argparse
     parser = argparse.ArgumentParser(
-        description='RDT IFF/ARNU service scheduler')
+        description='RDT Serviceinfo / scheduler')
 
     parser.add_argument('-c', '--config', dest='configFile',
         default='config/serviceinfo.yaml',
