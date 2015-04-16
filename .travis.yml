@@ -2,10 +2,10 @@ language: python
 python:
   - "2.7"
 before_install:
-  - sudo apt-get install -qq python-argparse python-bottle python-isodate python-lxml python-mysqldb python-redis python-tz python-zmq
+  - sudo apt-get install -qq python-argparse python-bottle python-lxml python-mysqldb python-redis python-tz python-zmq
 virtualenv:
   system_site_packages: true
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-#install: "pip install -r requirements.txt"
+install: "pip install -r requirements.txt"
 # command to run tests, e.g. python setup.py test
 script: python tests/test.py
