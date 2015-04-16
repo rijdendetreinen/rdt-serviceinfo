@@ -2,7 +2,10 @@ language: python
 python:
   - "2.7"
 before_install:
-  - sudo apt-get install -qq python-argparse python-bottle python-lxml python-mysqldb python-redis python-tz libzmq-dev
+  # See: https://github.com/travis-ci/travis-ci/issues/3106
+  - sudo apt-get remove libzmq3
+  - sudo rm /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
+  - sudo apt-get install -qq python-argparse python-bottle python-lxml python-mysqldb python-redis python-tz python-zmq
 virtualenv:
   system_site_packages: true
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
