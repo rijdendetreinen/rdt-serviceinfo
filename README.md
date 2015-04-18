@@ -1,6 +1,8 @@
 RDT Serviceinfo
 ===============
 
+[![Build Status](https://travis-ci.org/geertw/rdt-serviceinfo.svg?branch=master)](https://travis-ci.org/geertw/rdt-serviceinfo)
+
 RDT Serviceinfo is a tool for parsing and distributing information about
 transport services, both scheduled information and real-time information.
 
