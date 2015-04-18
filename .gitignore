@@ -6,3 +6,6 @@ __pycache__/
 
 # JetBrains:
 .idea/
+
+# Python coverage:
+.coverage
