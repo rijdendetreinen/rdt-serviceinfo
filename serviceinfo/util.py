@@ -27,13 +27,13 @@ def parse_iso_delay(delay_string):
     Returns None when the string is empty or is None.
     """
 
-    if delay_string == None:
+    if delay_string == None or len(delay_string) == 0:
         return 0
     else:
         delay = isodate.parse_duration(delay_string)
 
         # Convert to minutes:
-        return int(round(delay.seconds / 60))
+        return int(round(float(delay.seconds) / 60))
 
 
 def parse_str_int(string):
