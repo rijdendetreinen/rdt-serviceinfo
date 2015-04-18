@@ -2,7 +2,7 @@
 iff_database:
     host: localhost
     user: travis
-    password:
+    password: ""
     database: rdt_iff_test
 schedule_store:
     host: localhost
