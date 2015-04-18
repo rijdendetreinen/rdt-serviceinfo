@@ -13,7 +13,10 @@ install:
   #- "pip install -r requirements.txt"
   - pip install isodate
   - pip install coveralls
-# command to run tests, e.g. python setup.py test
+before_script:
+  - cp config/serviceinfo-unittest.travis.yaml config/serviceinfo.yaml
+  - mysql -e 'create database rdt_iff_test;'
+  - mysql < doc/testdata/iff-testset.sql
 script: coverage run --source serviceinfo -m py.test
 after_success:
   coveralls

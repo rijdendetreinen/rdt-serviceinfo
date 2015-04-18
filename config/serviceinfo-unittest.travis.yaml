@@ -1,0 +1,23 @@
+---
+iff_database:
+    host: localhost
+    user: travis
+    password:
+    database: rdt_iff_test
+schedule_store:
+    host: localhost
+    port: 6379
+    database: 0
+arnu_source:
+    socket: tcp://127.0.0.1:12345
+logging:
+    log_config: config/logging.yaml
+scheduler:
+    filter:
+        exclude:
+            company:
+                - evilrail
+        include:
+            service:
+                - [2500, 2599]
+...
