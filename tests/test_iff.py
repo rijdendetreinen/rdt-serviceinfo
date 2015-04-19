@@ -22,6 +22,7 @@ class IffDatabaseTests(unittest.TestCase):
     def test_get_company_name(self):
         self.assertEquals(self.iff.get_company_name("utts"), "Unit testing transport")
         self.assertIsNone(self.iff.get_company_name("invalid"))
+        self.assertIsNone(self.iff.get_company_name(None))
 
 
     def test_get_station_name(self):
@@ -70,6 +71,29 @@ class IffDatabaseTests(unittest.TestCase):
         self.assertEquals(service.stops[2].arrival_time.date(), self.service_date)
         self.assertEquals(service.stops[2].departure_time.date(), self.service_date)
         self.assertEquals(service.stops[2].scheduled_arrival_platform, "1")
+
+
+    def test_get_service_details_no_train(self):
+        services = self.iff.get_service_details(3, self.service_date)
+        self.assertEquals(len(services), 1, "get_service_details() should return only one service for ID 1")
+
+        # Check servicenumber, should be 'i3'
+        self.assertEquals(services[0].servicenumber, 'i3')
+
+
+    def test_get_services_details(self):
+        services = self.iff.get_services_details([1, 3], self.service_date)
+        self.assertEquals(len(services), 2, "get_services_details([1, 3]) should return two services")
+
+        self.assertEquals(services[0].service_id, 1)
+        self.assertEquals(services[1].service_id, 3)
+
+        services = self.iff.get_services_details([999], self.service_date)
+        self.assertEquals(len(services), 0, "get_services_details([999]) should return no services")
+
+
+    def test_get_service_details_nonexisting(self):
+        self.assertIsNone(self.iff.get_service_details(9999, self.service_date))
 
 
 if __name__ == '__main__':

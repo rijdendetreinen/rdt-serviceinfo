@@ -137,7 +137,8 @@ CREATE TABLE `timetable_service` (
 
 INSERT INTO `timetable_service` (`serviceid`, `companynumber`, `servicenumber`, `variant`, `firststop`, `laststop`, `servicename`) VALUES
 (1,	1,	1234,	'',	1,	5,	'Midnight Express'),
-(2,	1,	5678,	'',	1,	999,	'');
+(2,	1,	5678,	'',	1,	999,	''),
+(3,	1,	0,	'',	1,	2,	'');
 
 DROP TABLE IF EXISTS `timetable_stop`;
 CREATE TABLE `timetable_stop` (
@@ -154,7 +155,9 @@ INSERT INTO `timetable_stop` (`serviceid`, `idx`, `station`, `arrivaltime`, `dep
 (1,	2,	'asd',	'02:43:00',	'02:45:00'),
 (1,	3,	'shl',	'03:15:00',	'03:20:00'),
 (1,	4,	'gvc',	'03:34:00',	'03:37:00'),
-(1,	5,	'rtd',	'03:56:00',	NULL);
+(1,	5,	'rtd',	'03:56:00',	NULL),
+(3,	1,	'rtd',	NULL,	'12:34:00'),
+(3,	2,	'shl',	NULL,	'13:04:00');
 
 DROP TABLE IF EXISTS `timetable_transport`;
 CREATE TABLE `timetable_transport` (
@@ -167,7 +170,8 @@ CREATE TABLE `timetable_transport` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `timetable_transport` (`serviceid`, `transmode`, `firststop`, `laststop`) VALUES
-(1,	'IC',	1,	5);
+(1,	'IC',	1,	5),
+(3,	'NSB',	1,	2);
 
 DROP TABLE IF EXISTS `timetable_validity`;
 CREATE TABLE `timetable_validity` (
@@ -181,7 +185,8 @@ CREATE TABLE `timetable_validity` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `timetable_validity` (`serviceid`, `footnote`, `firststop`, `laststop`) VALUES
-(1,	0,	0,	999);
+(1,	0,	0,	999),
+(3,	0,	0,	999);
 
 DROP TABLE IF EXISTS `timezone`;
 CREATE TABLE `timezone` (
