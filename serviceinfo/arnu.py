@@ -134,6 +134,8 @@ def _parse_arnu_service(service_info, iff, parsed_service_ids):
         if cancelled == True:
             stop.cancelled_departure = True
             previous_stop_cancelled = True
+        else:
+            previous_stop_cancelled = False
 
         stops.append(stop)
 
