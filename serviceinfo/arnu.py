@@ -110,6 +110,10 @@ def _parse_arnu_service(service_info, iff, parsed_service_ids):
         stop.stop_name = iff.get_station_name(stopcode)
         stop.servicenumber = servicenumber
 
+        # Do not parse stops which are not intended for passengers (no arrival time AND no departure time):
+        if stop.arrival_time is None and stop.departure_time is None:
+            continue
+
         if 'StopType' in stop_info.attrib:
             # Check whether this stop is not cancelled:
             if stop_info.attrib['StopType'] == 'Cancelled-Stop':
@@ -120,6 +124,7 @@ def _parse_arnu_service(service_info, iff, parsed_service_ids):
             if stop_info.attrib['StopType'] == 'Diverted-Stop':
                 __logger__.debug('Diverted stop %s for service %s', stopcode, service_id)
                 cancelled = True
+                stop.cancelled_arrival = True
 
         # Set arrival to cancelled if the previous stop was cancelled
         if previous_stop_cancelled == True:
