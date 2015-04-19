@@ -12,11 +12,16 @@ class IffDatabaseTests(unittest.TestCase):
     service_date = datetime.date(year=2015, month=4, day=1)
 
     def setUp(self):
-        config = common.load_config("config/serviceinfo-unittest.yaml")
+        config = None
+        try:
+            config = common.load_config("config/serviceinfo-unittest.yaml")
+        except SystemExit:
+            self.skipTest("Could not load unit testing configuration")
+
         try:
             self.iff = iff.IffSource(config['iff_database'])
         except OperationalError as e:
-            self.skipTest("Could not connect to IFF database: %s" % e)
+            self.fail("Could not connect to IFF database: %s" % e)
 
 
     def test_get_company_name(self):
