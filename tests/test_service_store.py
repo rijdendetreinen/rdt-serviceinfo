@@ -136,5 +136,46 @@ class IffDatabaseTests(unittest.TestCase):
         self.store.delete_service(self.service_date_str, "4567", self.store.TYPE_ACTUAL)
 
 
+    def test_dates(self):
+        scheduled_service = self._prepare_service("987")
+        self.store.store_services([scheduled_service], self.store.TYPE_SCHEDULED)
+
+        scheduled_dates = self.store.get_service_dates(self.store.TYPE_SCHEDULED)
+        self.assertTrue(self.service_date_str in scheduled_dates)
+
+        all_dates = self.store.get_service_dates()
+        self.assertTrue(self.service_date_str in all_dates)
+
+        self.store.delete_service(self.service_date_str, "987", self.store.TYPE_SCHEDULED)
+
+
+    def test_servicenumbers(self):
+        scheduled_services = [self._prepare_service("2345"), self._prepare_service("5432"), self._prepare_service("4321")]
+        self.store.store_services(scheduled_services, self.store.TYPE_SCHEDULED)
+
+        actual_services = [self._prepare_service("77777"), self._prepare_service("888"), self._prepare_service("9999")]
+        self.store.store_services(actual_services, self.store.TYPE_ACTUAL)
+
+        scheduled_numbers = self.store.get_service_numbers(self.service_date_str, self.store.TYPE_SCHEDULED)
+        actual_numbers = self.store.get_service_numbers(self.service_date_str, self.store.TYPE_ACTUAL)
+        all_numbers = self.store.get_service_numbers(self.service_date_str, self.store.TYPE_ACTUAL_OR_SCHEDULED)
+
+        for service in scheduled_services:
+            print service.servicenumber, scheduled_numbers
+            self.assertTrue(service.servicenumber in scheduled_numbers)
+            self.assertTrue(service.servicenumber in all_numbers)
+
+        for service in actual_services:
+            self.assertTrue(service.servicenumber in actual_numbers)
+            self.assertTrue(service.servicenumber in all_numbers)
+
+
+        for service in scheduled_services:
+            self.store.delete_service(self.service_date_str, service.servicenumber, self.store.TYPE_SCHEDULED)
+
+        for service in actual_services:
+            self.store.delete_service(self.service_date_str, service.servicenumber, self.store.TYPE_ACTUAL)
+
+
 if __name__ == '__main__':
     unittest.main()
