@@ -14,6 +14,11 @@ class CommonTest(unittest.TestCase):
             common.load_config("config/non_existing_config_file.yaml")
 
 
+    def test_load_config_invalid(self):
+        with self.assertRaises(SystemExit) as cm:
+            common.load_config("README.md")
+
+
     def test_load_config_(self):
         with self.assertRaises(SystemExit) as cm:
             common.load_config("config/non_existing_config_file.yaml")
