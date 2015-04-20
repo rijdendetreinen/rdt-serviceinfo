@@ -29,7 +29,7 @@ class ServiceStore(object):
         dictionary, containing the Redis connection configuration.
         """
 
-        self.redis = redis.StrictRedis(host=config['host'],
+        self.redis = redis.Redis(host=config['host'],
             port=config['port'], db=config['database'])
 
 
