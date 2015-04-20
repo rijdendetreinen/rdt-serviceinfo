@@ -12,6 +12,7 @@ class IffDatabaseTests(unittest.TestCase):
 
     # Service date for all tests:
     service_date = datetime.date(year=2015, month=4, day=1)
+    service_date_str = "2015-04-01"
 
     def setUp(self):
         config = None
@@ -29,21 +30,110 @@ class IffDatabaseTests(unittest.TestCase):
             config['schedule_store'])
 
 
-    def test_store_services(self):
+    def _prepare_service(self, number):
+        """
+        Prepare a Service object with some stops
+        """
         service = data.Service()
-        service.servicenumber = 1234
-        service.service_date = datetime.date(year=2015, month=4, day=1)
+        service.servicenumber = number
+        service.service_id = number
+        service.service_date = self.service_date
+        service.transport_mode = "IC"
+        service.transport_mode_description = "Intercity"
 
-        stop1 = data.ServiceStop("ut")
-        stop1.stop_name = "Utrecht Centraal"
+        stop = data.ServiceStop("ut")
+        stop.stop_name = "Utrecht Centraal"
+        stop.departure_time = datetime.datetime(year=2015, month=4, day=1, hour=12, minute=34)
+        stop.scheduled_departure_platform = "5a"
+        stop.actual_departure_platform = "5b"
+        service.stops.append(stop)
 
-        stop2 = data.ServiceStop("asd")
-        stop2.stop_name = "Amsterdam Centraal"
+        stop = data.ServiceStop("asd")
+        stop.stop_name = "Amsterdam Centraal"
+        stop.departure_time = datetime.datetime(year=2015, month=4, day=1, hour=13, minute=34)
+        stop.arrival_time = datetime.datetime(year=2015, month=4, day=1, hour=13, minute=37)
+        stop.cancelled_departure = True
+        service.stops.append(stop)
 
-        service.stops.append(stop1)
-        service.stops.append(stop2)
+        stop = data.ServiceStop("rtd")
+        stop.stop_name = "Rotterdam Centraal"
+        stop.arrival_time = datetime.datetime(year=2015, month=4, day=1, hour=14, minute=30)
+        stop.scheduled_arrival_platform = "15b"
+        stop.actual_arrival_platform = "15b"
+        stop.cancelled_arrival = True
+        service.stops.append(stop)
 
+        return service
+
+
+    def _assert_service_equal(self, service, retrieved_service):
+        self.assertEquals(retrieved_service.servicenumber, service.servicenumber)
+        self.assertEquals(retrieved_service.service_id, service.service_id)
+        self.assertEquals(retrieved_service.service_date, service.service_date)
+        self.assertEquals(retrieved_service.transport_mode, service.transport_mode)
+        self.assertEquals(retrieved_service.transport_mode_description, service.transport_mode_description)
+        self.assertEquals(len(retrieved_service.stops), len(service.stops))
+
+        # Compare stops:
+        for index, stop in enumerate(service.stops):
+            self.assertEqual(retrieved_service.stops[index].stop_code, stop.stop_code)
+            self.assertEqual(retrieved_service.stops[index].stop_name, stop.stop_name)
+            self.assertEqual(retrieved_service.stops[index].arrival_time, stop.arrival_time)
+            self.assertEqual(retrieved_service.stops[index].departure_time, stop.departure_time)
+            self.assertEqual(retrieved_service.stops[index].scheduled_departure_platform, stop.scheduled_departure_platform)
+            self.assertEqual(retrieved_service.stops[index].actual_departure_platform, stop.actual_departure_platform)
+            self.assertEqual(retrieved_service.stops[index].scheduled_arrival_platform, stop.scheduled_arrival_platform)
+            self.assertEqual(retrieved_service.stops[index].actual_arrival_platform, stop.actual_arrival_platform)
+            self.assertEqual(retrieved_service.stops[index].arrival_delay, stop.arrival_delay)
+            self.assertEqual(retrieved_service.stops[index].departure_delay, stop.departure_delay)
+            self.assertEqual(retrieved_service.stops[index].cancelled_arrival, stop.cancelled_arrival)
+            self.assertEqual(retrieved_service.stops[index].cancelled_departure, stop.cancelled_departure)
+
+
+    def test_store_and_retrieve(self):
+        service = self._prepare_service("1234")
         self.store.store_services([service], self.store.TYPE_SCHEDULED)
+
+        retrieved_services = self.store.get_service(self.service_date_str, "1234", self.store.TYPE_SCHEDULED)
+        self.assertEqual(len(retrieved_services), 1)
+
+        retrieved_service = retrieved_services[0]
+        self._assert_service_equal(service, retrieved_service)
+
+        # Delete service:
+        self.store.delete_service(self.service_date_str, "1234", self.store.TYPE_SCHEDULED)
+
+        # Verify deletion:
+        self.assertIsNone(self.store.get_service(self.service_date_str, "1234"))
+
+
+    def test_actual_overrides_scheduled(self):
+        # Store a scheduled service, override it with an actual service:
+        scheduled_service = self._prepare_service("4567")
+        scheduled_service.service_id = "unittest-scheduled"
+        self.store.store_services([scheduled_service], self.store.TYPE_SCHEDULED)
+
+        # We have only stored the scheduled service.
+        # We would expect to retrieve the scheduled service now:
+        retrieved_services = self.store.get_service(self.service_date_str, "4567")
+        self.assertEqual(len(retrieved_services), 1)
+        self._assert_service_equal(retrieved_services[0], scheduled_service)
+
+
+        # Store the same service, but now actual:
+        scheduled_service = self._prepare_service("4567")
+        scheduled_service.service_id = "unittest-actual"
+        self.store.store_services([scheduled_service], self.store.TYPE_ACTUAL)
+
+        # We would expect to retrieve the actual service now:
+        retrieved_services = self.store.get_service(self.service_date_str, "4567")
+        self.assertEqual(len(retrieved_services), 1)
+        self._assert_service_equal(retrieved_services[0], scheduled_service)
+
+
+        # Delete both services:
+        self.store.delete_service(self.service_date_str, "4567", self.store.TYPE_SCHEDULED)
+        self.store.delete_service(self.service_date_str, "4567", self.store.TYPE_ACTUAL)
 
 
 if __name__ == '__main__':
