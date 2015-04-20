@@ -47,7 +47,7 @@ def load_config(config_file_path):
         try:
             with open(config_file_path, 'r') as config_file:
                 configuration = yaml.load(config_file.read())
-        except yaml.parser.ParserError as exception:
+        except (yaml.parser.ParserError, yaml.parser.ScannerError) as exception:
             print "YAML error in config file: %s" % exception
             sys.exit(1)
     else:
