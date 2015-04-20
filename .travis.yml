@@ -1,6 +1,8 @@
 language: python
 python:
   - "2.7"
+services:
+  - redis-server
 before_install:
   # See: https://github.com/travis-ci/travis-ci/issues/3106
   - sudo apt-get remove libzmq3
