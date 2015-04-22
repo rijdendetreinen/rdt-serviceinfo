@@ -36,6 +36,8 @@ class IffSource(object):
             user=config['user'], passwd=config['password'],
             db=config['database'])
 
+        self.connection.ping(True)
+
         # Always use Europe/Amsterdam as timezone (IFF times are local time)
         self.timezone = pytz.timezone('Europe/Amsterdam')
 
