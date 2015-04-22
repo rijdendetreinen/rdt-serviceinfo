@@ -30,6 +30,7 @@ import zmq
 from Queue import Queue
 from gzip import GzipFile
 from cStringIO import StringIO
+import MySQLdb
 
 import serviceinfo.arnu
 import serviceinfo.iff
@@ -99,6 +100,9 @@ class WorkerThread(threading.Thread):
                     for service in services:
                         self.store.store_service(service, self.store.TYPE_ACTUAL)
                         self.logger.debug('New information for service %s', service.service_id)
+                except MySQLdb.OperationalError as exception:
+                    self.logger.error(
+                        'MySQL error, message not processed. %s', exception)
                 except Exception:
                     self.logger.error(
                         'Unknown error while parsing ARNU message', exc_info=True)
