@@ -107,6 +107,41 @@ class IffDatabaseTests(unittest.TestCase):
         self.assertIsNone(self.store.get_service(self.service_date_str, "1234"))
 
 
+    def test_delete_nonexisting(self):
+        # Assure that this service id does not exist:
+        non_existing_id = 123456
+        if self.store.get_service(self.service_date_str, non_existing_id, self.store.TYPE_SCHEDULED) != None:
+            self.skipTest("Service %s exists in the service store" % non_existing_id)
+
+        # Delete service:
+        self.assertFalse(self.store.delete_service(self.service_date_str, non_existing_id, self.store.TYPE_SCHEDULED))
+
+
+    def test_update_existing(self):
+        service = self._prepare_service("234")
+        service.stops[0].departure_delay = 0
+        self.store.store_services([service], self.store.TYPE_ACTUAL)
+
+        retrieved_services = self.store.get_service(self.service_date_str, "234", self.store.TYPE_ACTUAL)
+        self.assertEqual(len(retrieved_services), 1)
+        self.assertEqual(retrieved_services[0].stops[0].departure_delay, 0)
+
+        # Update the existing service:
+        service = self._prepare_service("234")
+        service.stops[0].departure_delay = 15
+        self.store.store_services([service], self.store.TYPE_ACTUAL)
+
+        retrieved_services = self.store.get_service(self.service_date_str, "234", self.store.TYPE_ACTUAL)
+        self.assertEqual(len(retrieved_services), 1)
+        self.assertEqual(retrieved_services[0].stops[0].departure_delay, 15)
+
+        # Delete service:
+        self.store.delete_service(self.service_date_str, "234", self.store.TYPE_ACTUAL)
+
+        # Verify deletion:
+        self.assertIsNone(self.store.get_service(self.service_date_str, "234"))
+
+
     def test_actual_overrides_scheduled(self):
         # Store a scheduled service, override it with an actual service:
         scheduled_service = self._prepare_service("4567")
@@ -130,10 +165,33 @@ class IffDatabaseTests(unittest.TestCase):
         self.assertEqual(len(retrieved_services), 1)
         self._assert_service_equal(retrieved_services[0], scheduled_service)
 
-
         # Delete both services:
         self.store.delete_service(self.service_date_str, "4567", self.store.TYPE_SCHEDULED)
         self.store.delete_service(self.service_date_str, "4567", self.store.TYPE_ACTUAL)
+
+
+    def test_dont_store_empty_stop(self):
+        # Test whether a stop withouth departure and arrival time is not stored
+
+        service = self._prepare_service("1234")
+        service.stops[1].arrival_time = None
+        service.stops[1].departure_time = None
+        self.store.store_services([service], self.store.TYPE_SCHEDULED)
+
+        retrieved_services = self.store.get_service(self.service_date_str, "1234", self.store.TYPE_SCHEDULED)
+        self.assertEqual(len(retrieved_services), 1)
+
+        # Compare original and stored service.
+        # Remove stop 1 from original service for the comparison:
+        del service.stops[1]
+        retrieved_service = retrieved_services[0]
+        self._assert_service_equal(service, retrieved_service)
+
+        # Delete service:
+        self.store.delete_service(self.service_date_str, "1234", self.store.TYPE_SCHEDULED)
+
+        # Verify deletion:
+        self.assertIsNone(self.store.get_service(self.service_date_str, "1234"))
 
 
     def test_dates(self):
