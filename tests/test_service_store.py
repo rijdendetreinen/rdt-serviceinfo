@@ -219,7 +219,6 @@ class IffDatabaseTests(unittest.TestCase):
         all_numbers = self.store.get_service_numbers(self.service_date_str, self.store.TYPE_ACTUAL_OR_SCHEDULED)
 
         for service in scheduled_services:
-            print service.servicenumber, scheduled_numbers
             self.assertTrue(service.servicenumber in scheduled_numbers)
             self.assertTrue(service.servicenumber in all_numbers)
 

@@ -103,7 +103,6 @@ class ArnuTests(unittest.TestCase):
         for index, service in enumerate(check_services):
             prev_departure_cancelled = False
             for stop in service.stops:
-                print index, stop, stop.cancelled_arrival, stop.cancelled_departure
                 if stop.stop_code in must_be_cancelled[index] and must_be_cancelled[index].index(stop.stop_code) > 0:
                     self.assertTrue(stop.cancelled_arrival, 'Service %s - stop %s should have a cancelled arrival' % (service.servicenumber, stop.stop_code))
                 elif prev_departure_cancelled:
