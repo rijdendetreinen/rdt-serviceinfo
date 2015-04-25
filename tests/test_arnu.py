@@ -117,7 +117,6 @@ class ArnuTests(unittest.TestCase):
                 else:
                     self.assertFalse(stop.cancelled_departure, 'Service %s - stop %s should not have a cancelled departure' % (service.servicenumber, stop.stop_code))
                     prev_departure_cancelled = False
-        self.fail()
 
 
     def test_parse_multiple_service_ids(self):
