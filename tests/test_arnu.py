@@ -73,8 +73,12 @@ class ArnuTests(unittest.TestCase):
         with open("doc/testdata/cancelled-partly2.xml", "r") as content_file:
             message2 = content_file.read()
 
+        with open("doc/testdata/cancelled-partly3.xml", "r") as content_file:
+            message3 = content_file.read()
+
         services1 = arnu.parse_arnu_message(message1, self.iff)
         services2 = arnu.parse_arnu_message(message2, self.iff)
+        services3 = arnu.parse_arnu_message(message3, self.iff)
 
         # Test message cancelled-partly.xml contains both service 957 bd-asd and service 3077 hdr-nm
         self.assertEqual(len(services1), 2, "cancelled-partly.xml should return 2 services")
@@ -82,9 +86,12 @@ class ArnuTests(unittest.TestCase):
         # Test message cancelled-partly2.xml only contains service 949 bd-asd
         self.assertEqual(len(services2), 1, "cancelled-partly2.xml should return 1 service")
 
+        # Test message cancelled-partly2.xml only contains service 4033 utg-rtd
+        self.assertEqual(len(services3), 1, "cancelled-partly3.xml should return 1 service")
+
         # Prepare tests:
-        check_services = [services1[0], services2[0]]
-        must_be_cancelled = [[ 'bd' ], ['shl', 'asd']]
+        check_services = [services1[0], services2[0], services3[0]]
+        must_be_cancelled = [[ 'bd' ], ['shl', 'asd'], ['utg', 'kma']]
 
         self.assertEqual(check_services[0].servicenumber, "957", "First service in cancelled-partly.xml must be service 957")
         self.assertEqual(check_services[0].get_destination_str(), "asd", "Destination for train 957 should be 'asd'")
@@ -96,6 +103,7 @@ class ArnuTests(unittest.TestCase):
         for index, service in enumerate(check_services):
             prev_departure_cancelled = False
             for stop in service.stops:
+                print index, stop, stop.cancelled_arrival, stop.cancelled_departure
                 if stop.stop_code in must_be_cancelled[index] and must_be_cancelled[index].index(stop.stop_code) > 0:
                     self.assertTrue(stop.cancelled_arrival, 'Service %s - stop %s should have a cancelled arrival' % (service.servicenumber, stop.stop_code))
                 elif prev_departure_cancelled:
@@ -109,6 +117,7 @@ class ArnuTests(unittest.TestCase):
                 else:
                     self.assertFalse(stop.cancelled_departure, 'Service %s - stop %s should not have a cancelled departure' % (service.servicenumber, stop.stop_code))
                     prev_departure_cancelled = False
+        self.fail()
 
 
     def test_parse_multiple_service_ids(self):
