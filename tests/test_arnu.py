@@ -30,7 +30,7 @@ class ArnuTests(unittest.TestCase):
 
 
     def test_parse_diverted(self):
-        with open("doc/testdata/diverted.xml", "r") as content_file:
+        with open("tests/testdata/diverted.xml", "r") as content_file:
             message = content_file.read()
 
         services = arnu.parse_arnu_message(message, self.iff)
@@ -52,7 +52,7 @@ class ArnuTests(unittest.TestCase):
 
 
     def test_parse_fully_cancelled(self):
-        with open("doc/testdata/cancelled-fully.xml", "r") as content_file:
+        with open("tests/testdata/cancelled-fully.xml", "r") as content_file:
             message = content_file.read()
 
         services = arnu.parse_arnu_message(message, self.iff)
@@ -67,13 +67,13 @@ class ArnuTests(unittest.TestCase):
 
 
     def test_parse_partly_cancelled(self):
-        with open("doc/testdata/cancelled-partly.xml", "r") as content_file:
+        with open("tests/testdata/cancelled-partly.xml", "r") as content_file:
             message1 = content_file.read()
 
-        with open("doc/testdata/cancelled-partly2.xml", "r") as content_file:
+        with open("tests/testdata/cancelled-partly2.xml", "r") as content_file:
             message2 = content_file.read()
 
-        with open("doc/testdata/cancelled-partly3.xml", "r") as content_file:
+        with open("tests/testdata/cancelled-partly3.xml", "r") as content_file:
             message3 = content_file.read()
 
         services1 = arnu.parse_arnu_message(message1, self.iff)
@@ -120,7 +120,7 @@ class ArnuTests(unittest.TestCase):
 
 
     def test_parse_multiple_service_ids(self):
-        with open("doc/testdata/multiple-serviceids.xml", "r") as content_file:
+        with open("tests/testdata/multiple-serviceids.xml", "r") as content_file:
             message = content_file.read()
 
         services = arnu.parse_arnu_message(message, self.iff)
@@ -142,7 +142,7 @@ class ArnuTests(unittest.TestCase):
 
 
     def test_parse_multiple_wings(self):
-        with open("doc/testdata/multiple-wings.xml", "r") as content_file:
+        with open("tests/testdata/multiple-wings.xml", "r") as content_file:
             message = content_file.read()
 
         services = arnu.parse_arnu_message(message, self.iff)
