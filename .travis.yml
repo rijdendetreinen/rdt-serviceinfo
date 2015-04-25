@@ -15,10 +15,12 @@ install:
   #- "pip install -r requirements.txt"
   - pip install isodate
   - pip install coveralls
+  - pip install scrutinizer-ocular
 before_script:
   - cp config/serviceinfo-unittest.travis.yaml config/serviceinfo-unittest.yaml
   - mysql -e 'create database rdt_iff_test;'
   - mysql -u travis rdt_iff_test < doc/testdata/iff-testset.sql
 script: coverage run --source serviceinfo -m py.test
 after_success:
-  coveralls
+  - coveralls
+  - ocular --data-file ".coverage"
