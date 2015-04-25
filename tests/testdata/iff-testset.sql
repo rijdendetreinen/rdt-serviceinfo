@@ -22,7 +22,7 @@ CREATE TABLE `company` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `company` (`company`, `code`, `name`, `timeturn`) VALUES
-(1,	'utts',	'Unit testing transport',	NULL);
+(1, 'utts', 'Unit testing transport', NULL);
 
 DROP TABLE IF EXISTS `connmode`;
 CREATE TABLE `connmode` (
@@ -52,7 +52,7 @@ CREATE TABLE `country` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `country` (`code`, `inland`, `name`) VALUES
-('NL',	0,	'Nederland');
+('NL',  0,  'Nederland');
 
 DROP TABLE IF EXISTS `delivery`;
 CREATE TABLE `delivery` (
@@ -74,7 +74,7 @@ CREATE TABLE `footnote` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `footnote` (`footnote`, `servicedate`) VALUES
-(0,	'2015-04-01');
+(0, '2015-04-01');
 
 DROP TABLE IF EXISTS `station`;
 CREATE TABLE `station` (
@@ -90,11 +90,12 @@ CREATE TABLE `station` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `station` (`shortname`, `trainchanges`, `layovertime`, `country`, `timezone`, `x`, `y`, `name`) VALUES
-('asd',	1,	300,	'NL',	0,	121860,	487980,	'Amsterdam Centraal'),
-('gvc',	1,	300,	'NL',	0,	82120,	455310,	'Den Haag Centraal'),
-('rtd',	1,	300,	'NL',	0,	91870,	437800,	'Rotterdam Centraal'),
-('shl',	1,	240,	'NL',	0,	112380,	480220,	'Schiphol'),
-('ut',	1,	300,	'NL',	0,	136070,	455760,	'Utrecht Centraal');
+('asd', 1,  300,  'NL', 0,  121860, 487980, 'Amsterdam Centraal'),
+('gvc', 1,  300,  'NL', 0,  82120,  455310, 'Den Haag Centraal'),
+('ledn',  1,  300,  'NL', 0,  93140,  464650, 'Leiden Centraal'),
+('rtd', 1,  300,  'NL', 0,  91870,  437800, 'Rotterdam Centraal'),
+('shl', 1,  240,  'NL', 0,  112380, 480220, 'Schiphol'),
+('ut',  1,  300,  'NL', 0,  136070, 455760, 'Utrecht Centraal');
 
 DROP TABLE IF EXISTS `timetable_attribute`;
 CREATE TABLE `timetable_attribute` (
@@ -117,11 +118,11 @@ CREATE TABLE `timetable_platform` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `timetable_platform` (`serviceid`, `idx`, `station`, `arrival`, `departure`, `footnote`) VALUES
-(1,	1,	'ut',	NULL,	'14b',	0),
-(1,	2,	'asd',	'5a',	'5b',	0),
-(1,	3,	'shl',	'1',	'1',	0),
-(1,	4,	'gvc',	'5',	'5',	0),
-(1,	5,	'rtd',	'9',	NULL,	0);
+(1, 1,  'ut', NULL, '14b',  0),
+(1, 2,  'asd',  '5a', '5b', 0),
+(1, 3,  'shl',  '1',  '1',  0),
+(1, 4,  'gvc',  '5',  '5',  0),
+(1, 5,  'rtd',  '9',  NULL, 0);
 
 DROP TABLE IF EXISTS `timetable_service`;
 CREATE TABLE `timetable_service` (
@@ -136,9 +137,10 @@ CREATE TABLE `timetable_service` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `timetable_service` (`serviceid`, `companynumber`, `servicenumber`, `variant`, `firststop`, `laststop`, `servicename`) VALUES
-(1,	1,	1234,	'',	1,	5,	'Midnight Express'),
-(2,	1,	5678,	'',	1,	999,	''),
-(3,	1,	0,	'',	1,	2,	'');
+(1, 1,  1234, '', 1,  5,  'Midnight Express'),
+(2, 1,  5678, '', 1,  3,  ''),
+(3, 1,  0,  '', 1,  2,  ''),
+(2, 1,  6678, '', 3,  5,  '');
 
 DROP TABLE IF EXISTS `timetable_stop`;
 CREATE TABLE `timetable_stop` (
@@ -151,13 +153,18 @@ CREATE TABLE `timetable_stop` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `timetable_stop` (`serviceid`, `idx`, `station`, `arrivaltime`, `departuretime`) VALUES
-(1,	1,	'ut',	NULL,	'02:07:00'),
-(1,	2,	'asd',	'02:43:00',	'02:45:00'),
-(1,	3,	'shl',	'03:15:00',	'03:20:00'),
-(1,	4,	'gvc',	'03:34:00',	'03:37:00'),
-(1,	5,	'rtd',	'03:56:00',	NULL),
-(3,	1,	'rtd',	NULL,	'12:34:00'),
-(3,	2,	'shl',	NULL,	'13:04:00');
+(1, 1,  'ut', NULL, '02:07:00'),
+(1, 2,  'asd',  '02:43:00', '02:45:00'),
+(1, 3,  'shl',  '03:15:00', '03:20:00'),
+(1, 4,  'gvc',  '03:34:00', '03:37:00'),
+(1, 5,  'rtd',  '03:56:00', NULL),
+(2, 1,  'rtd',  NULL, '12:34:00'),
+(2, 2,  'gvc',  '12:51:00', '12:55:00'),
+(2, 3,  'ledn', '13:05:00', '13:10:00'),
+(2, 4,  'shl',  '13:35:00', '13:35:00'),
+(2, 5,  'asd',  '13:45:00', NULL),
+(3, 1,  'rtd',  NULL, '12:34:00'),
+(3, 2,  'shl',  NULL, '13:04:00');
 
 DROP TABLE IF EXISTS `timetable_transport`;
 CREATE TABLE `timetable_transport` (
@@ -170,8 +177,9 @@ CREATE TABLE `timetable_transport` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `timetable_transport` (`serviceid`, `transmode`, `firststop`, `laststop`) VALUES
-(1,	'IC',	1,	5),
-(3,	'NSB',	1,	2);
+(1, 'IC', 1,  5),
+(3, 'NSB',  1,  2),
+(2, 'S',  1,  5);
 
 DROP TABLE IF EXISTS `timetable_validity`;
 CREATE TABLE `timetable_validity` (
@@ -185,8 +193,9 @@ CREATE TABLE `timetable_validity` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `timetable_validity` (`serviceid`, `footnote`, `firststop`, `laststop`) VALUES
-(1,	0,	0,	999),
-(3,	0,	0,	999);
+(1, 0,  0,  999),
+(3, 0,  0,  999),
+(2, 0,  0,  999);
 
 DROP TABLE IF EXISTS `timezone`;
 CREATE TABLE `timezone` (
@@ -225,9 +234,9 @@ CREATE TABLE `trnsmode` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `trnsmode` (`code`, `description`) VALUES
-('IC',	'Intercity'),
-('NSB',	'Stopbus i.p.v. trein'),
-('NSS',	'Snelbus i.p.v. trein'),
-('S',	'Sneltrein'),
-('SPR',	'Sprinter'),
-('ST',	'stoptrein');
+('IC',  'Intercity'),
+('NSB', 'Stopbus i.p.v. trein'),
+('NSS', 'Snelbus i.p.v. trein'),
+('S', 'Sneltrein'),
+('SPR', 'Sprinter'),
+('ST',  'stoptrein');
