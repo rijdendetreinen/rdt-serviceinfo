@@ -81,10 +81,7 @@ class ServiceStore(object):
         self.redis.hmset('%s:info' % key_prefix, service_data)
 
         # Remove existing stops
-        # TODO: check for existing key, delete any stop that might still exist as key
         self.redis.delete('%s:stops' % key_prefix)
-
-        # TODO: metadata like train type, etc.
 
         # Add stops:
         for stop in service.stops:
@@ -238,9 +235,9 @@ class ServiceStore(object):
             data = self.redis.hgetall('%s:stops:%s' % (key_prefix, stop))
 
             # Convert empty strings to None:
-            for k,v in data.iteritems():
-                if v == '':
-                    data[k] = None
+            for key, value in data.iteritems():
+                if value == '':
+                    data[key] = None
 
             service_stop.stop_name = data['stop_name']
             service_stop.arrival_time = data['arrival_time']
@@ -264,7 +261,7 @@ class ServiceStore(object):
     def delete_service(self, servicedate, servicenumber, store_type):
         """
         Delete a service from the service store
-        
+
         Args:
             servicedate (string): Service date in YYYY-MM-DD format
             servicenumber (string): Service number
