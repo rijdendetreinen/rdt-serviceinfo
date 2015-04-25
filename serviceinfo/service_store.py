@@ -195,7 +195,7 @@ class ServiceStore(object):
         return services
 
 
-    def get_service_details(self, servicedate, service_id, service_type=TYPE_ACTUAL_OR_SCHEDULED):
+    def get_service_details(self, servicedate, service_id, service_type):
         """
         Get details for a given service_id on a given date.
 
@@ -203,19 +203,11 @@ class ServiceStore(object):
             servicedate (datetime.date): Service date
             service_id (int): Service id (e.g. id 1) - not to be confused with
                 the servicenumber of a service
-            type (string, optional): Store type (default: actual if available,
-                otherwise scheduled)
+            service_type (string): Store type (TYPE_ACTUAL or TYPE_SCHEDULED)
 
         Returns:
             serviceinfo.data.Service: Service object
         """
-
-        if service_type == self.TYPE_ACTUAL_OR_SCHEDULED:
-            service = self.get_service_details(servicedate, service_id, self.TYPE_ACTUAL)
-            if service != None:
-                return service
-            else:
-                return self.get_service_details(servicedate, service_id, self.TYPE_SCHEDULED)
 
         service = Service()
 
