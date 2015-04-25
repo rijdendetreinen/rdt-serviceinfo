@@ -78,7 +78,32 @@ class IffDatabaseTests(unittest.TestCase):
         self.assertEquals(service.stops[2].scheduled_arrival_platform, "1")
 
 
-    def test_get_service_details_no_train(self):
+    def test_multiple_servicenumbers(self):
+        services = self.iff.get_service_details(2, self.service_date)
+        self.assertEquals(len(services), 2, "get_service_details() should return two services for ID 2")
+
+        # Test metadata for both services:
+        for service in services:
+            self.assertEquals(service.service_id, 2)
+            self.assertEquals(service.company_name, "Unit testing transport")
+            self.assertEquals(service.transport_mode_description, "Sneltrein")
+            self.assertEquals(service.get_servicedate_str(), "2015-04-01")
+            self.assertEquals(service.get_destination_str(), "asd")
+
+        self.assertEquals(services[0].servicenumber, 5678)
+        self.assertEquals(services[1].servicenumber, 6678)
+
+        # From station 'ledn' on, service number should be 6678
+        for service in services:
+            match_servicenumber = 5678
+            for stop in service.stops:
+                if stop.stop_code == 'ledn':
+                    match_servicenumber = 6678
+
+                self.assertEquals(stop.servicenumber, match_servicenumber)
+
+
+    def test_bus_service(self):
         services = self.iff.get_service_details(3, self.service_date)
         self.assertEquals(len(services), 1, "get_service_details() should return only one service for ID 1")
 
