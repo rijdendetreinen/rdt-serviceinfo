@@ -116,3 +116,8 @@ filter:
         - '*/tests/*'
 tools:
     external_code_coverage: true
+build:
+    dependencies:
+        before:
+            - sudo apt-get install -y python-argparse python-bottle python-lxml python-mysqldb python-redis python-tz python-zmq
+            - pip install isodate
