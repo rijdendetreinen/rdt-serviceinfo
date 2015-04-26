@@ -68,20 +68,51 @@ def _parse_arnu_service(service_info, iff, parsed_service_ids):
         list: List of serviceinfo.data.Service objects
     """
 
-    servicenumbers = []
     services = []
 
     # Generic metadata about the service:
-    service_id = service_info.find('ServiceCode').text
     company_code = service_info.findtext('CompanyCode')
     company_name = iff.get_company_name(company_code)
     transport_mode = service_info.find('TransportModeCode').text
     transport_mode_description = iff.get_transport_mode(transport_mode)
-    service_date = None
 
     # Parse stops:
+    stops, service_date, servicenumbers = _parse_stops(service_info.find('StopList').findall('Stop'), iff)
+
+    # Check whether complete service is cancelled:
+    service_cancelled = True
+    for stop in stops:
+        if not stop.cancelled_departure:
+            service_cancelled = False
+            break
+
+    # Create a Service object for every servicenumber:
+    for servicenumber in servicenumbers:
+        service = data.Service()
+
+        service_id = "%s-%s-%s" % (servicenumber, stops[0].stop_code, stops[-1].stop_code)
+
+        if service_id in parsed_service_ids:
+            __logger__.warning('Service ID %s already in use', service_id)
+
+        service.service_date = service_date
+        service.service_id = service_id
+        service.servicenumber = servicenumber
+        service.company_code = company_code
+        service.company_name = company_name
+        service.transport_mode = transport_mode
+        service.transport_mode_description = transport_mode_description
+        service.stops = stops
+        service.cancelled = service_cancelled
+
+        services.append(service)
+
+    return services
+
+def _parse_stops(arnu_stops, iff):
+    service_date = None
     stops = []
-    arnu_stops = service_info.find('StopList').findall('Stop')
+    servicenumbers = []
     previous_stop_cancelled = False
 
     for stop_info in arnu_stops:
@@ -117,12 +148,12 @@ def _parse_arnu_service(service_info, iff, parsed_service_ids):
         if 'StopType' in stop_info.attrib:
             # Check whether this stop is not cancelled:
             if stop_info.attrib['StopType'] == 'Cancelled-Stop':
-                __logger__.debug('Cancelled stop %s for service %s', stopcode, service_id)
+                __logger__.debug('Cancelled stop %s for service %s', stopcode, servicenumber)
                 cancelled = True
 
             # Check whether this stop is diverted:
             if stop_info.attrib['StopType'] == 'Diverted-Stop':
-                __logger__.debug('Diverted stop %s for service %s', stopcode, service_id)
+                __logger__.debug('Diverted stop %s for service %s', stopcode, servicenumber)
                 cancelled = True
                 stop.cancelled_arrival = True
 
@@ -139,32 +170,4 @@ def _parse_arnu_service(service_info, iff, parsed_service_ids):
 
         stops.append(stop)
 
-    # Check whether complete service is cancelled:
-    service_cancelled = True
-    for stop in stops:
-        if stop.cancelled_departure == False:
-            service_cancelled = False
-            break
-
-    # Create a Service object for every servicenumber:
-    for servicenumber in servicenumbers:
-        service = data.Service()
-
-        service_id = "%s-%s-%s" % (servicenumber, stops[0].stop_code, stops[-1].stop_code)
-
-        if service_id in parsed_service_ids:
-            __logger__.warning('Service ID %s already in use', service_id)
-
-        service.service_date = service_date
-        service.service_id = service_id
-        service.servicenumber = servicenumber
-        service.company_code = company_code
-        service.company_name = company_name
-        service.transport_mode = transport_mode
-        service.transport_mode_description = transport_mode_description
-        service.stops = stops
-        service.cancelled = service_cancelled
-
-        services.append(service)
-
-    return services
+    return (stops, service_date, servicenumbers)
