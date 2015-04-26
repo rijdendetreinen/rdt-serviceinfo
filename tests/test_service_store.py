@@ -207,6 +207,60 @@ class IffDatabaseTests(unittest.TestCase):
         self.store.delete_service(self.service_date_str, "987", self.store.TYPE_SCHEDULED)
 
 
+    def test_transportmodes(self):
+        """
+        Test whether all services are correctly returned by
+        get_servicenumbers_transport()
+        """
+
+        scheduled_services = []
+        scheduled_services.append(self._prepare_service("1987"))
+        scheduled_services.append(self._prepare_service("1789"))
+
+        self.store.store_services(scheduled_services, self.store.TYPE_SCHEDULED)
+
+        # Make various calls to store.get_servicenumbers_transport():
+        transport_ic_upper = self.store.get_servicenumbers_transport(
+            self.service_date_str, "IC", self.store.TYPE_SCHEDULED)
+
+        transport_ic = self.store.get_servicenumbers_transport(
+            self.service_date_str, "ic", self.store.TYPE_SCHEDULED)
+
+        transport_ic_actual = self.store.get_servicenumbers_transport(
+            self.service_date_str, "ic", self.store.TYPE_ACTUAL)
+
+        transport_ic_combined = self.store.get_servicenumbers_transport(
+            self.service_date_str, "ic", self.store.TYPE_ACTUAL_OR_SCHEDULED)
+
+        transport_spr = self.store.get_servicenumbers_transport(
+            self.service_date_str, "spr", self.store.TYPE_SCHEDULED)
+
+        # Uppercase/lowercase should not make a difference:
+        self.assertEqual(len(transport_ic_upper), len(transport_ic))
+
+        # 'IC' should return two services, for both actual and combined:
+        self.assertEqual(len(transport_ic), 2)
+        self.assertEqual(len(transport_ic_combined), 2)
+
+        # 'Spr' and IC-actual should not return services:
+        self.assertEqual(len(transport_spr), 0)
+        self.assertEqual(len(transport_ic_actual), 0)
+
+        # Verify returned IC services:
+        for scheduled_service in scheduled_services:
+            self.assertTrue(scheduled_service.servicenumber in transport_ic)
+
+        # Remove inserted services:
+        for scheduled_service in scheduled_services:
+            self.store.delete_service(self.service_date_str,
+                scheduled_service.servicenumber, self.store.TYPE_SCHEDULED)
+
+        # Verify that no service is left behind:
+        transport_ic_combined = self.store.get_servicenumbers_transport(
+            self.service_date_str, "ic")
+        self.assertEqual(len(transport_ic_combined), 0)
+
+
     def test_servicenumbers(self):
         scheduled_services = [self._prepare_service("2345"), self._prepare_service("5432"), self._prepare_service("4321")]
         self.store.store_services(scheduled_services, self.store.TYPE_SCHEDULED)
