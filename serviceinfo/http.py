@@ -19,20 +19,73 @@ def get_services(servicedate):
     Retrieve a list of all services on a given date
     """
 
+    # Prepare the store and store_type:
+    store, store_type = __prepare_lookup()
+    services = store.get_service_numbers(servicedate, store_type)
+
+    # Send list:
+    return __send_servicenumbers_list(services)
+
+
+@bottle.route('/service-transport/<servicedate>/<transport_mode>')
+def get_transport_services(servicedate, transport_mode):
+    """
+    Retrieve a list of all services on a given date
+    for a given transport mode
+    """
+
+    # Prepare the store and store_type:
+    store, store_type = __prepare_lookup()
+
+    # Retrieve all services for the given transport mode:
+    services = store.get_servicenumbers_transport(
+        servicedate, transport_mode, store_type)
+
+    # Send list:
+    return __send_servicenumbers_list(services)
+
+
+def __prepare_lookup():
+    """
+    Prepare a lookup request: initialize a service store object,
+    determine the store type and return them both as a tuple.
+    
+    Returns:
+        tuple: store, store_type
+    """
+
+    # Prepare the service store:
     store = service_store.ServiceStore(common.configuration['schedule_store'])
 
-    service_type = store.TYPE_ACTUAL_OR_SCHEDULED
+    # Default is combined
+    store_type = store.TYPE_ACTUAL_OR_SCHEDULED
 
+    # Override if get parameter 'type' is set:
     if bottle.request.query.type == 'actual':
-        service_type = store.TYPE_ACTUAL
+        store_type = store.TYPE_ACTUAL
     elif bottle.request.query.type == 'scheduled':
-        service_type = store.TYPE_SCHEDULED
+        store_type = store.TYPE_SCHEDULED
 
-    services = store.get_service_numbers(servicedate, service_type)
+    # Return service store and store_type as a tuple
+    return (store, store_type)
 
+
+def __send_servicenumbers_list(services):
+    """
+    Send a list of services, sort list when requested.
+
+    Args:
+        services (list): List of services (as dictionary)
+
+    Returns:
+        dict: dictionary with services list
+    """
+
+    # Sort list when requested:
     if bottle.request.query.sort == 'true':
         services = sorted(services)
 
+    # Return dict with list of services:
     return {'services': services}
 
 
