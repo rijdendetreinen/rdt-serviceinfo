@@ -50,6 +50,15 @@ class ServiceStore(object):
         self.redis.sadd('services:%s:%s' % (service_type,
             service.get_servicedate_str()), service.servicenumber)
 
+        # Add to transportmode list:
+        transport_mode = service.transport_mode
+        if transport_mode != None:
+            transport_mode = transport_mode.lower()
+
+        self.redis.sadd('services:%s:%s:transport_mode:%s' % (service_type,
+            service.get_servicedate_str(), transport_mode),
+            service.servicenumber)
+
         # Check whether service did already exist:
         if self.redis.sismember('services:%s:%s:%s' % (service_type,
             service.get_servicedate_str(), service.servicenumber),
@@ -136,7 +145,7 @@ class ServiceStore(object):
         Retrieve all service numbers for a given date
 
         Args:
-            servicedate (datetime.date): Service date
+            servicedate (string): Service date (YYYY-MM-DD)
             type (string, optional): Store type
                 (default: both actual and scheduled)
 
@@ -152,6 +161,41 @@ class ServiceStore(object):
         else:
             # Retrieve all service numbers for the given date and service_type:
             key = 'services:%s:%s' % (service_type, servicedate)
+            return list(self.redis.smembers(key))
+
+
+    def get_servicenumbers_transport(self, servicedate,
+        transport_mode, store_type=TYPE_ACTUAL_OR_SCHEDULED):
+        """
+        Retrieve all service numbers for a given transport mode
+        running on a given servicedate
+
+        Args:
+            servicedate (string): Service date (YYYY-MM-DD)
+            transport_mode (string): Transport mode, e.g. 'IC'
+            store_type (string, optional): Store type
+                (default: both actual and scheduled)
+
+        Returns:
+            list: List of servicenumbers
+        """
+
+        transport_mode = transport_mode.lower()
+
+        if store_type == self.TYPE_ACTUAL_OR_SCHEDULED:
+            # Combine actual and scheduled service numbers:
+            key1 = 'services:%s:%s:transport_mode:%s' % (self.TYPE_ACTUAL,
+                servicedate, transport_mode)
+            key2 = 'services:%s:%s:transport_mode:%s' % (self.TYPE_SCHEDULED,
+                servicedate, transport_mode)
+
+            return list(self.redis.sunion(key1, key2))
+        else:
+            # Retrieve all service numbers for the given date, store_type
+            # and transport_mode:
+            key = 'services:%s:%s:transport_mode:%s' % (store_type,
+                servicedate, transport_mode)
+
             return list(self.redis.smembers(key))
 
 
@@ -197,7 +241,7 @@ class ServiceStore(object):
         Get details for a given service_id on a given date.
 
         Args:
-            servicedate (datetime.date): Service date
+            servicedate (string): Service date (YYYY-MM-DD)
             service_id (int): Service id (e.g. id 1) - not to be confused with
                 the servicenumber of a service
             service_type (string): Store type (TYPE_ACTUAL or TYPE_SCHEDULED)
@@ -277,6 +321,10 @@ class ServiceStore(object):
         service_ids = self.redis.smembers('services:%s:%s:%s' % (store_type,
             servicedate, servicenumber))
 
+        # Retrieve a single service element to retrieve some metadata:
+        service = self.get_service_details(servicedate,
+            list(service_ids)[0], store_type)
+
         # Iterate over service ID's, delete them one by one:
         for service_id in service_ids:
             # Delete service details for service ID:
@@ -288,6 +336,10 @@ class ServiceStore(object):
 
         self.redis.srem('services:%s:%s' % (store_type, servicedate),
             servicenumber)
+
+        transport_mode = service.transport_mode.lower()
+        self.redis.srem('services:%s:%s:transport_mode:%s' %
+            (store_type, servicedate, transport_mode), servicenumber)
 
         # Check whether servicedate can be removed:
         if not self.redis.exists('services:%s:%s' % (store_type, servicedate)):
