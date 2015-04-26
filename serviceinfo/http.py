@@ -23,14 +23,14 @@ def get_services(servicedate):
 
     service_type = store.TYPE_ACTUAL_OR_SCHEDULED
 
-    if bottle.request.query.get('type') == 'actual':
+    if bottle.request.query.type == 'actual':
         service_type = store.TYPE_ACTUAL
-    elif bottle.request.query.get('type') == 'scheduled':
+    elif bottle.request.query.type == 'scheduled':
         service_type = store.TYPE_SCHEDULED
 
     services = store.get_service_numbers(servicedate, service_type)
 
-    if bottle.request.query.get('sort') == 'true':
+    if bottle.request.query.sort == 'true':
         services = sorted(services)
 
     return {'services': services}
