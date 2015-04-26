@@ -19,16 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys
-import os
-import logging
-import logging.config
-import yaml
 import bottle
 
 import serviceinfo.common
-import serviceinfo.iff
-import serviceinfo.service_store
-import serviceinfo.http
 
 # Load configuration:
 serviceinfo.common.load_config(sys.argv[1])
