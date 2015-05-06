@@ -23,13 +23,14 @@ import logging.config
 import argparse
 from datetime import date, timedelta
 import isodate
+import sys
 
 import serviceinfo.service_store
 import serviceinfo.common
 import serviceinfo.util
 
 
-def cleanup_datastore():
+def cleanup_datastore(treshold, store_type):
     """
     Clean up the datastore
     """
@@ -41,7 +42,8 @@ def cleanup_datastore():
 
     dates = sorted(store.get_service_dates())
 
-    treshold_date = date.today() - timedelta(days=1)
+    treshold_date = date.today() - timedelta(days=treshold)
+    logger.debug("Treshold date: %s" % treshold_date)
 
     for service_date in dates:
         date_parsed = isodate.parse_date(service_date)
@@ -51,15 +53,17 @@ def cleanup_datastore():
 
         logger.info("Removing outdated services for %s", service_date)
 
-        services = store.get_service_numbers(service_date, store.TYPE_ACTUAL)
-        logger.debug("Removing %s actual services", len(services))
-        for servicenumber in services:
-            store.delete_service(service_date, servicenumber, store.TYPE_ACTUAL)
+        if store_type == 'all' or store_type == 'actual':
+            services = store.get_service_numbers(service_date, store.TYPE_ACTUAL)
+            logger.debug("Removing %s actual services", len(services))
+            for servicenumber in services:
+                store.delete_service(service_date, servicenumber, store.TYPE_ACTUAL)
 
-        services = store.get_service_numbers(service_date, store.TYPE_SCHEDULED)
-        logger.debug("Removing %s scheduled services", len(services))
-        for servicenumber in services:
-            store.delete_service(service_date, servicenumber, store.TYPE_SCHEDULED)
+        if store_type == 'all' or store_type == 'scheduled':
+            services = store.get_service_numbers(service_date, store.TYPE_SCHEDULED)
+            logger.debug("Removing %s scheduled services", len(services))
+            for servicenumber in services:
+                store.delete_service(service_date, servicenumber, store.TYPE_SCHEDULED)
 
 
 def main():
@@ -75,7 +79,12 @@ def main():
         default='config/serviceinfo.yaml',
         action='store', help='Configuration file')
 
-    # TODO: delete only from scheduled or actual store
+    parser.add_argument('-t', '--treshold', dest='treshold',
+        default='1', action='store', help='Treshold before cleanup in days (default: 1)')
+
+    parser.add_argument('-s', '--store', dest='store',
+        default='all', action='store',
+        help='Specify store type (actual, scheduled, or all). Default is all')
 
     args = parser.parse_args()
 
@@ -83,11 +92,22 @@ def main():
     serviceinfo.common.load_config(args.configFile)
     serviceinfo.common.setup_logging()
 
+    # Test store type:
+    if args.store not in ['actual', 'scheduled', 'all']:
+        print "Error: Invalid store type specified."
+        print "'%s' given, must be 'actual', 'scheduled' or 'all'." % args.store
+        sys.exit(1)
+
+    if not args.treshold.isdigit():
+        print "Error: Invalid treshold"
+        print "'%s' given, must be a number." % args.treshold
+        sys.exit(1)
+
     # Get logger instance:
     logger = logging.getLogger(__name__)
 
     logger.info("Starting cleanup")
-    cleanup_datastore()
+    cleanup_datastore(int(args.treshold), args.store)
 
 if __name__ == "__main__":
     main()
