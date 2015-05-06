@@ -7,7 +7,7 @@ import serviceinfo.service_store as service_store
 
 import unittest
 
-class IffDatabaseTests(unittest.TestCase):
+class ServiceStoreTests(unittest.TestCase):
     # These tests use the special unit test database
 
     # Service date for all tests:
@@ -46,6 +46,7 @@ class IffDatabaseTests(unittest.TestCase):
         stop.departure_time = datetime.datetime(year=2015, month=4, day=1, hour=12, minute=34)
         stop.scheduled_departure_platform = "5a"
         stop.actual_departure_platform = "5b"
+        stop.servicenumber = number
         service.stops.append(stop)
 
         stop = data.ServiceStop("asd")
@@ -53,6 +54,7 @@ class IffDatabaseTests(unittest.TestCase):
         stop.departure_time = datetime.datetime(year=2015, month=4, day=1, hour=13, minute=34)
         stop.arrival_time = datetime.datetime(year=2015, month=4, day=1, hour=13, minute=37)
         stop.cancelled_departure = True
+        stop.servicenumber = number
         service.stops.append(stop)
 
         stop = data.ServiceStop("rtd")
@@ -61,6 +63,7 @@ class IffDatabaseTests(unittest.TestCase):
         stop.scheduled_arrival_platform = "15b"
         stop.actual_arrival_platform = "15b"
         stop.cancelled_arrival = True
+        stop.servicenumber = number
         service.stops.append(stop)
 
         return service
@@ -115,6 +118,20 @@ class IffDatabaseTests(unittest.TestCase):
 
         # Delete service:
         self.assertFalse(self.store.delete_service(self.service_date_str, non_existing_id, self.store.TYPE_SCHEDULED))
+
+
+    def test_delete_multi(self):
+        # Prepare service with two service numbers: 555 and 666
+        service = self._prepare_service("555")
+        service.stops[1].servicenumber = 666
+        service.stops[2].servicenumber = 666
+        self.store.store_services([service], self.store.TYPE_SCHEDULED)
+        service.servicenumber = 666
+        self.store.store_services([service], self.store.TYPE_SCHEDULED)
+
+        # Delete service:
+        self.assertTrue(self.store.delete_service(self.service_date_str, 666, self.store.TYPE_SCHEDULED))
+        self.assertFalse(self.store.delete_service(self.service_date_str, 555, self.store.TYPE_SCHEDULED), 'Service 555 should have been deleted by deleting service 666')
 
 
     def test_update_existing(self):

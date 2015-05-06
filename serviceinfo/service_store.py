@@ -262,6 +262,9 @@ class ServiceStore(object):
         # Get metadata:
         service_data = self.redis.hgetall('%s:info' % key_prefix)
 
+        if len(service_data) == 0:
+            return None
+
         service.cancelled = (service_data['cancelled'] == 'True')
         service.company_code = service_data['company_code']
         service.company_name = service_data['company_name']
@@ -330,16 +333,26 @@ class ServiceStore(object):
             # Delete service details for service ID:
             self._delete_service_id(servicedate, service_id, store_type)
 
+        # Make list of servicenumbers:
+        servicenumbers = [servicenumber]
+
+        if service != None:
+            for stop in service.stops:
+                if stop.servicenumber not in servicenumbers:
+                    servicenumbers.append(stop.servicenumber)
+
         # Delete service information:
-        self.redis.delete('services:%s:%s:%s' % (store_type, servicedate,
-            servicenumber))
+        for servicenumber in servicenumbers:
+            self.redis.delete('services:%s:%s:%s' % (store_type, servicedate,
+                servicenumber))
 
-        self.redis.srem('services:%s:%s' % (store_type, servicedate),
-            servicenumber)
+            self.redis.srem('services:%s:%s' % (store_type, servicedate),
+                servicenumber)
 
-        transport_mode = service.transport_mode.lower()
-        self.redis.srem('services:%s:%s:transport_mode:%s' %
-            (store_type, servicedate, transport_mode), servicenumber)
+            if service != None:
+                transport_mode = service.transport_mode.lower()
+                self.redis.srem('services:%s:%s:transport_mode:%s' %
+                    (store_type, servicedate, transport_mode), servicenumber)
 
         # Check whether servicedate can be removed:
         if not self.redis.exists('services:%s:%s' % (store_type, servicedate)):
