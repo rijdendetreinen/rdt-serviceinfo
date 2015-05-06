@@ -54,16 +54,12 @@ def cleanup_datastore(treshold, store_type):
         logger.info("Removing outdated services for %s", service_date)
 
         if store_type == 'all' or store_type == 'actual':
-            services = store.get_service_numbers(service_date, store.TYPE_ACTUAL)
-            logger.debug("Removing %s actual services", len(services))
-            for servicenumber in services:
-                store.delete_service(service_date, servicenumber, store.TYPE_ACTUAL)
+            logger.debug("Removing actual services")
+            store.trash_store(service_date, store.TYPE_ACTUAL)
 
         if store_type == 'all' or store_type == 'scheduled':
-            services = store.get_service_numbers(service_date, store.TYPE_SCHEDULED)
-            logger.debug("Removing %s scheduled services", len(services))
-            for servicenumber in services:
-                store.delete_service(service_date, servicenumber, store.TYPE_SCHEDULED)
+            logger.debug("Removing scheduled services")
+            store.trash_store(service_date, store.TYPE_SCHEDULED)
 
 
 def main():

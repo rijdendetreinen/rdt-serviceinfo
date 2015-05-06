@@ -134,6 +134,21 @@ class ServiceStoreTests(unittest.TestCase):
         self.assertFalse(self.store.delete_service(self.service_date_str, 555, self.store.TYPE_SCHEDULED), 'Service 555 should have been deleted by deleting service 666')
 
 
+    def test_trash_store(self):
+        # Prepare services
+        service1 = self._prepare_service("313")
+        service2 = self._prepare_service("333")
+        self.store.store_services([service1, service2], self.store.TYPE_SCHEDULED)
+
+        # Verify 
+        self.assertNotEqual(0, len(self.store.get_service_numbers(self.service_date_str, self.store.TYPE_SCHEDULED)))
+
+        # Trash store:
+        self.store.trash_store(self.service_date_str, self.store.TYPE_SCHEDULED)
+
+        self.assertEqual(0, len(self.store.get_service_numbers(self.service_date_str, self.store.TYPE_SCHEDULED)), "Store should be empty after trash")
+
+
     def test_update_existing(self):
         service = self._prepare_service("234")
         service.stops[0].departure_delay = 0

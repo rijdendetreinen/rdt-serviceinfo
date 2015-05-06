@@ -404,3 +404,29 @@ class ServiceStore(object):
             # Retrieve all service dates for the given store_type:
             key = 'services:%s:date' % store_type
             return list(self.redis.smembers(key))
+
+
+    def trash_store(self, servicedate, store_type):
+        """
+        Delete a service from the service store
+
+        Args:
+            servicedate (string): Service date in YYYY-MM-DD format
+            store_type (string): Store type (actual or scheduled)
+        """
+
+        first = True
+        cursor = '0'
+        while cursor != '0' or first:
+            cursor, data = self.redis.execute_command('scan', cursor)
+            first = False
+            for key in data:
+                prefix1 = 'schedule:%s:%s:' % (store_type, servicedate)
+                prefix2 = 'services:%s:%s:' % (store_type, servicedate)
+                if key.startswith(prefix1) or key.startswith(prefix2):
+                    # Delete key
+                    self.redis.delete(key)
+
+        # Remove service date and service date key:
+        self.redis.delete('services:%s:%s' % (store_type, servicedate))
+        self.redis.srem('services:%s:date' % store_type, servicedate)
