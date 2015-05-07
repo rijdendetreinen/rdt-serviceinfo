@@ -30,4 +30,18 @@ scheduler:
                 - [20200, 20299]
                 - [11900, 11999]
                 - [11000, 11099]
+injector:
+    injector_server: tcp://127.0.0.1:8140
+    window: 70
+    selection:
+        service:
+            - [20180, 20199]
+            - [20200, 20299]
+        transport_mode:
+            - B
+            - BNS
+            - NSB
+            - NSM
+            - NSS
+            - NST
 ...
