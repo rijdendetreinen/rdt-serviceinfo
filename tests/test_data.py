@@ -34,6 +34,23 @@ class ServiceTest(unittest.TestCase):
         self.assertFalse(service.match_filter(number_filter), "Service/exclusive match")
 
 
+    def test_service_filter_transport_mode(self):
+        service = data.Service()
+
+        trans_filter = {'transport_mode': ['ic', 'SPR']}
+
+        service.transport_mode = 'ICE'
+        self.assertFalse(service.match_filter(trans_filter), "Service/exclusive match")
+        service.transport_mode = 'IC'
+        self.assertTrue(service.match_filter(trans_filter), "Service/inclusive match")
+        service.transport_mode = 'SPR'
+        self.assertTrue(service.match_filter(trans_filter), "Service/inclusive match")
+        service.transport_mode = 'Spr'
+        self.assertTrue(service.match_filter(trans_filter), "Service/inclusive match")
+        service.transport_mode = ''
+        self.assertFalse(service.match_filter(trans_filter), "Service/exclusive match")
+
+
     def test_service_destination(self):
         service = data.Service()
         service.servicenumber = 1234

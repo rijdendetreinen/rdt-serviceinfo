@@ -67,6 +67,10 @@ class Service(object):
                 if self.servicenumber >= number_range[0] and self.servicenumber <= number_range[1]:
                     return True
 
+        if 'transport_mode' in service_filter:
+            if self.transport_mode.lower() in (x.lower() for x in service_filter['transport_mode']):
+                return True
+
         return False
 
 
