@@ -22,6 +22,7 @@ import sys
 import bottle
 
 import serviceinfo.common
+import serviceinfo.http
 
 # Load configuration:
 serviceinfo.common.load_config(sys.argv[1])
