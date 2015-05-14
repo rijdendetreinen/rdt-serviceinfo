@@ -27,6 +27,7 @@ import sys
 
 import serviceinfo.iff
 import serviceinfo.service_store
+import serviceinfo.service_filter
 import serviceinfo.common
 import serviceinfo.util
 
@@ -38,11 +39,9 @@ def get_current_servicedate(date='TODAY'):
 
     logger = logging.getLogger(__name__)
 
-    # TODO: determine on current time whether servicedate
-    # is today or next day (4:00 AM)
+    # Determine service date
     if date == 'TODAY':
-        service_date = datetime.today().replace(
-            hour=0, minute=0, second=0, microsecond=0).date()
+        service_date = serviceinfo.util.get_service_date(datetime.now())
     else:
         # Parse date
         try:
@@ -98,12 +97,12 @@ def filter_schedule(schedule, filter_config):
     for service in schedule:
         exclude_service = False
 
-        if service.match_filter(filter_config['exclude']):
+        if serviceinfo.service_filter.match_filter(service, filter_config['exclude']):
             exclude_service = True
 
         if exclude_service:
             # Check to whether still include this service:
-            if service.match_filter(filter_config['include']):
+            if serviceinfo.service_filter.match_filter(service, filter_config['include']):
                 exclude_service = False
 
         if not exclude_service:
