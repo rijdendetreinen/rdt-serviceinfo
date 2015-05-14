@@ -7,6 +7,7 @@ and magic for determining the correct servicedate for a given datetime.
 
 import datetime
 import isodate
+from pytz import timezone
 
 def parse_iso_datetime(datetime_string):
     """
@@ -92,3 +93,12 @@ def get_service_date(date_time):
         return date_time.date() - datetime.timedelta(days=1)
     else:
         return date_time.date()
+
+
+def get_localized_datetime(date_time):
+    """
+    Return a localized datetime (i.e., adds the normal Dutch timezone).
+    """
+
+    return timezone('Europe/Amsterdam').localize(date_time)
+

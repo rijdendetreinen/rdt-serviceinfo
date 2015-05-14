@@ -5,6 +5,7 @@ Module containing methods to filter service objects
 """
 
 import datetime
+import serviceinfo.util
 
 def match_filter(service, service_filter):
     """
@@ -27,20 +28,32 @@ def match_filter(service, service_filter):
     return False
 
 
-def departure_time_window(stop, minutes):
+def departure_time_window(stop, minutes, check_date=None):
     """
-    Returns True when there is a departure between now and the given amount of minutes
+    Check the time window for a departure
+
+    Args:
+        stop (serviceinfo.data.ServiceStop): stop object
+        minutes (int): number of minutes
+        check_date (datetime, optional): reference time (default current time)
+
+    Returns:
+        boolean: Returns True when departure is between now and minutes
     """
 
     if stop.departure_time == None:
         return False
 
+    # Determine reference datetime:
+    if check_date == None:
+        check_date = datetime.datetime.now()
+        check_date = serviceinfo.util.get_localized_datetime(check_date)
+
     # Do not match when already departed:
-    if stop.departure_time < datetime.datetime.now():
+    if stop.departure_time < check_date:
         return False
 
-    # Determine reference datetime:
-    check_date = datetime.datetime.now() + datetime.timedelta(minutes=minutes)
+    check_date = check_date + datetime.timedelta(minutes=minutes)
 
     if stop.departure_time < check_date:
         return True

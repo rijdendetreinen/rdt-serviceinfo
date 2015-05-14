@@ -3,6 +3,7 @@ import serviceinfo.service_filter as service_filter
 
 import unittest
 import datetime
+from pytz import timezone
 
 class ServiceFilterTest(unittest.TestCase):
     def test_service_filter_company(self):
@@ -53,6 +54,9 @@ class ServiceFilterTest(unittest.TestCase):
 
 
 class StopFilterTest(unittest.TestCase):
+    def setUp(self):
+        self.timezone = timezone('Europe/Amsterdam')
+
     def test_time_window_empty(self):
         stop = data.ServiceStop("ut")
 
@@ -61,17 +65,30 @@ class StopFilterTest(unittest.TestCase):
     def test_departure_time_window(self):
         stop = data.ServiceStop("ut")
         stop.departure_time = datetime.datetime.now() + datetime.timedelta(hours=1)
+        stop.departure_time = self.timezone.localize(stop.departure_time)
 
         self.assertTrue(service_filter.departure_time_window(stop, 70), "Stop should match")
 
         stop = data.ServiceStop("ut")
         stop.departure_time = datetime.datetime.now() + datetime.timedelta(hours=3)
+        stop.departure_time = self.timezone.localize(stop.departure_time)
 
         self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop should not match")
+
+    def test_departure_time_ownreftime(self):
+        stop = data.ServiceStop("ut")
+        reftime = self.timezone.localize(datetime.datetime(year=2015, month=4, day=1, hour=5, minute=15))
+        stop.departure_time = reftime
+
+        self.assertTrue(service_filter.departure_time_window(stop, 70, reftime), "Stop should match")
+
+        stop.departure_time = reftime + datetime.timedelta(hours=3)
+        self.assertFalse(service_filter.departure_time_window(stop, 70, reftime), "Stop should not match")
 
     def test_time_window_departed(self):
         stop = data.ServiceStop("ut")
         stop.departure_time = datetime.datetime.now() - datetime.timedelta(minutes=1)
+        stop.departure_time = self.timezone.localize(stop.departure_time)
 
         self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop should not match")
 
