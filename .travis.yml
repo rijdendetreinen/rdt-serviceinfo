@@ -25,3 +25,7 @@ script: coverage run --source serviceinfo -m py.test
 after_success:
   - coveralls
   - ocular --data-file ".coverage"
+notifications:
+  webhooks:
+    # trigger Buildtime Trend Service to parse Travis CI log
+    - https://buildtimetrend.herokuapp.com/travis
