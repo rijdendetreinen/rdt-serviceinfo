@@ -32,17 +32,17 @@ def departure_time_window(stop, minutes):
     Returns True when there is a departure between now and the given amount of minutes
     """
 
-    if stop.departure == None:
+    if stop.departure_time == None:
         return False
 
     # Do not match when already departed:
-    if stop.departure < datetime.datetime.now():
+    if stop.departure_time < datetime.datetime.now():
         return False
 
     # Determine reference datetime:
     check_date = datetime.datetime.now() + datetime.timedelta(minutes=minutes)
 
-    if stop.departure < check_date:
+    if stop.departure_time < check_date:
         return True
 
     return False

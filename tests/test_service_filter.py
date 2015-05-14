@@ -55,24 +55,23 @@ class ServiceFilterTest(unittest.TestCase):
 class StopFilterTest(unittest.TestCase):
     def test_time_window_empty(self):
         stop = data.ServiceStop("ut")
-        stop.departure = None
 
         self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop withouth departure should not match")
 
     def test_departure_time_window(self):
         stop = data.ServiceStop("ut")
-        stop.departure = datetime.datetime.now() + datetime.timedelta(hours=1)
+        stop.departure_time = datetime.datetime.now() + datetime.timedelta(hours=1)
 
         self.assertTrue(service_filter.departure_time_window(stop, 70), "Stop should match")
 
         stop = data.ServiceStop("ut")
-        stop.departure = datetime.datetime.now() + datetime.timedelta(hours=3)
+        stop.departure_time = datetime.datetime.now() + datetime.timedelta(hours=3)
 
         self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop should not match")
 
     def test_time_window_departed(self):
         stop = data.ServiceStop("ut")
-        stop.departure = datetime.datetime.now() - datetime.timedelta(minutes=1)
+        stop.departure_time = datetime.datetime.now() - datetime.timedelta(minutes=1)
 
         self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop should not match")
 
