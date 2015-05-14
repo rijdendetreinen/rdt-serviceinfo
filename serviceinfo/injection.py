@@ -8,6 +8,12 @@ allowing them to be injected into other applications.
 import isodate
 
 class Injection:
+    """
+    Class for constructing Injection dicts to other applications.
+    The constructor takes a Service object and a ServiceStop object for the
+    departure that will be injected.
+    """
+
     service = None
     stop = None
     max_via = 3

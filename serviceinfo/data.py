@@ -84,6 +84,11 @@ class ServiceStop(object):
         return "<ServiceStop @ %s>" % self.stop_code
 
     def get_departure_platform(self):
+        """
+        Return the departure platform. Uses the actual platform if set, returns
+        the scheduled departure platform otherwise.
+        """
+
         if self.actual_departure_platform is not None:
             return self.actual_departure_platform
         else:
