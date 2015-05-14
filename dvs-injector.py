@@ -27,23 +27,37 @@ import datetime
 
 import serviceinfo.common
 import serviceinfo.service_store
+import serviceinfo.service_filter as service_filter
 
 
-def get_services():
+def get_services(config):
     filtered_services = []
     logging.debug("About to retrieve services from schedule store")
 
-    store = serviceinfo.service_store.ServiceStore(serviceinfo.common.configuration['schedule_store'])
+    store = serviceinfo.service_store.ServiceStore(config['schedule_store'])
     servicedate = get_servicedate()
     services = store.get_service_numbers(servicedate)
 
     for servicenumber in services:
         found_services = store.get_service(servicedate.strftime('%Y-%m-%d'), servicenumber)
         for service in found_services:
-            if service.match_filter(serviceinfo.common.configuration['injector']['selection']):
+            if service_filter.match_filter(service, config['injector']['selection']):
                 filtered_services.append(service)
 
     logging.debug("Found %s services elegible for injecting", len(filtered_services))
+    return filtered_services
+
+
+def get_departures(services, config):
+    departures = []
+
+    for service in services:
+        for stop in service.stops:
+            if service_filter.departure_time_window(stop, config['injector']['window']):
+                departures.append((service, stop))
+
+    logging.debug("Found %s departures elegible for injecting", len(departures))
+    return departures
 
 
 def get_servicedate():
@@ -69,9 +83,10 @@ def main():
     serviceinfo.common.load_config(args.configFile)
     serviceinfo.common.setup_logging()
 
-    get_services()
+    services = get_services(serviceinfo.common.configuration)
+    stops = get_departures(services, serviceinfo.common.configuration)
 
-    # TODO: inject them to DVS, check for time windows
+    # TODO: inject them to DVS
 
 if __name__ == "__main__":
     main()
