@@ -33,16 +33,16 @@ def departure_time_window(stop, minutes):
     """
 
     if stop.departure == None:
-    	return False
+        return False
 
     # Do not match when already departed:
     if stop.departure < datetime.datetime.now():
-    	return False
+        return False
 
     # Determine reference datetime:
     check_date = datetime.datetime.now() + datetime.timedelta(minutes=minutes)
 
     if stop.departure < check_date:
-    	return True
+        return True
 
     return False
