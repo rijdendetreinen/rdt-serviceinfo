@@ -2,6 +2,7 @@ import serviceinfo.data as data
 import serviceinfo.service_filter as service_filter
 
 import unittest
+import datetime
 
 class ServiceFilterTest(unittest.TestCase):
     def test_service_filter_company(self):
@@ -49,6 +50,31 @@ class ServiceFilterTest(unittest.TestCase):
         self.assertTrue(service_filter.match_filter(service, trans_filter), "Service/inclusive match")
         service.transport_mode = ''
         self.assertFalse(service_filter.match_filter(service, trans_filter), "Service/exclusive match")
+
+
+class StopFilterTest(unittest.TestCase):
+    def test_time_window_empty(self):
+        stop = data.ServiceStop("ut")
+        stop.departure = None
+
+        self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop withouth departure should not match")
+
+    def test_departure_time_window(self):
+        stop = data.ServiceStop("ut")
+        stop.departure = datetime.datetime.now() + datetime.timedelta(hours=1)
+
+        self.assertTrue(service_filter.departure_time_window(stop, 70), "Stop should match")
+
+        stop = data.ServiceStop("ut")
+        stop.departure = datetime.datetime.now() + datetime.timedelta(hours=3)
+
+        self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop should not match")
+
+    def test_time_window_departed(self):
+        stop = data.ServiceStop("ut")
+        stop.departure = datetime.datetime.now() - datetime.timedelta(minutes=1)
+
+        self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop should not match")
 
 
 if __name__ == '__main__': #
