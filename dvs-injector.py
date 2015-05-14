@@ -18,16 +18,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
-import os
 import logging
 import logging.config
 import argparse
 import datetime
+import zmq
 
 import serviceinfo.common
+import serviceinfo.util
 import serviceinfo.service_store
 import serviceinfo.service_filter as service_filter
+import serviceinfo.injection as injection
 
 
 def get_services(config):
@@ -60,8 +61,41 @@ def get_departures(services, config):
     return departures
 
 
+def inject_stops(stops, config):
+    logging.debug("Opening connection to injection receiver")
+
+    context = zmq.Context()
+    client = context.socket(zmq.REQ)
+    client.connect(config['injector']['injector_server'])
+    client.setsockopt(zmq.LINGER, 0)
+
+    poller = zmq.Poller()
+    poller.register(client, zmq.POLLIN)
+
+    inject_count = 0
+
+    for (service, stop) in stops:
+        inject = injection.Injection(service, stop)
+        client.send_json(inject.as_dict())
+
+        if poller.poll(5000):
+            result = client.recv_pyobj()
+        else:
+            logging.error("DVS server timeout, injections aborted")
+            break
+
+        if result is not True:
+            logging.error("Server did not respond successfully while injecting service %s, stop %s", service, stop)
+        else:
+            inject_count += 1
+
+    client.close()
+
+    logging.info("Processed %s injections", inject_count)
+
+
 def get_servicedate():
-    return datetime.date.today()
+    return serviceinfo.util.get_service_date(datetime.datetime.now())
 
 
 def main():
@@ -86,7 +120,9 @@ def main():
     services = get_services(serviceinfo.common.configuration)
     stops = get_departures(services, serviceinfo.common.configuration)
 
-    # TODO: inject them to DVS
+    # Inject stops to DVS:
+    inject_stops(stops, serviceinfo.common.configuration)
+
 
 if __name__ == "__main__":
     main()
