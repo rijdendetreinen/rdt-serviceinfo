@@ -26,7 +26,7 @@ class ServiceFilterTest(unittest.TestCase):
 
         service.servicenumber = 12345
         self.assertFalse(service_filter.match_filter(service, number_filter), "Service/exclusive match")
-        service.servicenumber = 4116
+        service.servicenumber = '4116'
         self.assertTrue(service_filter.match_filter(service, number_filter), "Service/inclusive match")
         service.servicenumber = 4100
         self.assertTrue(service_filter.match_filter(service, number_filter), "Service/inclusive match")

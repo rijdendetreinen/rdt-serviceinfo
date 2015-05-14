@@ -17,8 +17,13 @@ def match_filter(service, service_filter):
             return True
 
     if 'service' in service_filter:
+        # Convert servicenumber to int:
+        try:
+            servicenumber = int(service.servicenumber)
+        except ValueError:
+            servicenumber = 0
         for number_range in service_filter['service']:
-            if service.servicenumber >= number_range[0] and service.servicenumber <= number_range[1]:
+            if servicenumber >= number_range[0] and servicenumber <= number_range[1]:
                 return True
 
     if 'transport_mode' in service_filter:
