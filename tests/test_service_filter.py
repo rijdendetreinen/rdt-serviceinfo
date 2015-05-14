@@ -34,6 +34,8 @@ class ServiceFilterTest(unittest.TestCase):
         self.assertTrue(service_filter.match_filter(service, number_filter), "Service/inclusive match")
         service.servicenumber = 4200
         self.assertFalse(service_filter.match_filter(service, number_filter), "Service/exclusive match")
+        service.servicenumber = 'i4123'
+        self.assertFalse(service_filter.match_filter(service, number_filter), "Invalid service number should not match")
 
 
     def test_filter_transport_mode(self):
