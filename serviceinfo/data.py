@@ -76,8 +76,15 @@ class ServiceStop(object):
     cancelled_departure = False
     servicenumber = 0
 
-    def __init__(self, stop_code):
+    def __init__(self, stop_code, stop_name=None):
         self.stop_code = stop_code
+        self.stop_name = stop_name
 
     def __repr__(self):
         return "<ServiceStop @ %s>" % self.stop_code
+
+    def get_departure_platform(self):
+        if self.actual_departure_platform is not None:
+            return self.actual_departure_platform
+        else:
+            return self.scheduled_departure_platform
