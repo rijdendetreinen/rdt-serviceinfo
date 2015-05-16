@@ -17,11 +17,13 @@ class Injection:
     service = None
     stop = None
     max_via = 3
+    upcoming_stops = None
 
 
     def __init__(self, service, stop):
         self.service = service
         self.stop = stop
+        self.process_upcoming_stops()
 
 
     def as_dict(self):
@@ -46,8 +48,31 @@ class Injection:
         inject['stop_code'] = self.stop.stop_code
         inject['platform'] = self.stop.get_departure_platform()
         inject['via'] = self.get_via_stops()
+        inject['stops'] = self.upcoming_stops
 
         return inject
+
+
+    def process_upcoming_stops(self):
+        """
+        Process all stops for this service, fill a list of all upcoming stops
+        and store them in self.upcoming_stops
+        """
+
+        stops = []
+        include = False
+
+        for stop in self.service.stops:
+            if stop.stop_code == self.stop.stop_code:
+                # Start including stops
+                include = True
+            elif include is True:
+                stops.append(stop)
+
+        # Convert stops to code/name pairs:
+        self.upcoming_stops = []
+        for stop in stops:
+            self.upcoming_stops.append((stop.stop_code, stop.stop_name))
 
 
     def get_via_stops(self):
@@ -56,23 +81,11 @@ class Injection:
         with a tuple containing stop code and stop name.
         """
 
-        via_stops = []
-        include = False
         destination = self.service.get_destination().stop_code
+        stops = self.upcoming_stops[:self.max_via + 1]
+        via_stops = []
 
-        for stop in self.service.stops:
-            if stop.stop_code == self.stop.stop_code:
-                include = True
-            elif stop.stop_code == destination:
-                break
-            elif include is True:
-                # Add stop when max is not reached:
-                if len(via_stops) < self.max_via:
-                    via_stops.append(stop)
-
-        # Convert stops to code/name pairs:
-        via_stations = []
-        for via_stop in via_stops:
-            via_stations.append((via_stop.stop_code, via_stop.stop_name))
-
-        return via_stations
+        for stop in stops:
+            if stop[0] != destination:
+                via_stops.append(stop)
+        return via_stops[:self.max_via]

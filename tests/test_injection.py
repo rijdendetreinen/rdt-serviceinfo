@@ -66,29 +66,48 @@ class InjectionTest(unittest.TestCase):
 
 
     def test_via(self):
+        # Test upcoming stops and via route
+
         service = self._prepare_service(123)
+
         # Add some stops
         service.stops = []
         for x in range(0, 15):
             service.stops.append(data.ServiceStop("stat%s" % x, "Station %s" % x))
 
+        # First station: we expect a full via (3 stops) and a lot of upcoming stops
         stop = service.stops[0]
         via = injection.Injection(service, stop).get_via_stops()
+        upcoming_stops = injection.Injection(service, stop).upcoming_stops
 
         self.assertEquals(len(via), 3)
+        self.assertEquals(len(upcoming_stops), 14)
         self.assertEquals(via[0][0], 'stat1')
         self.assertEquals(via[2][0], 'stat3')
+        self.assertEquals(upcoming_stops[0][0], 'stat1')
+        self.assertEquals(upcoming_stops[2][0], 'stat3')
+        self.assertEquals(upcoming_stops[4][0], 'stat5')
+        self.assertEquals(upcoming_stops[13][0], 'stat14')
 
+        # Second last station: we expect 1 via stop and 2 upcoming stops
         stop = service.stops[12]
         via = injection.Injection(service, stop).get_via_stops()
+        upcoming_stops = injection.Injection(service, stop).upcoming_stops
 
         self.assertEquals(len(via), 1)
+        self.assertEquals(len(upcoming_stops), 2)
         self.assertEquals(via[0][0], 'stat13')
+        self.assertEquals(upcoming_stops[0][0], 'stat13')
+        self.assertEquals(upcoming_stops[1][0], 'stat14')
 
+        # Last station: we do not expect a via, and expect only the destination as upcoming stop
         stop = service.stops[13]
         via = injection.Injection(service, stop).get_via_stops()
+        upcoming_stops = injection.Injection(service, stop).upcoming_stops
 
         self.assertEquals(len(via), 0)
+        self.assertEquals(len(upcoming_stops), 1)
+        self.assertEquals(upcoming_stops[0][0], 'stat14')
 
 
 if __name__ == '__main__':
