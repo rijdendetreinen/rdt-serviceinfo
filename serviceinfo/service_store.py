@@ -79,12 +79,17 @@ class ServiceStore(object):
         # Store service information:
         self.redis.delete('%s:info' % key_prefix)
 
+        first_departure = util.datetime_to_iso(service.stops[0].departure_time)
+        last_arrival = util.datetime_to_iso(service.stops[-1].arrival_time)
+
         service_data = {'cancelled': service.cancelled,
                         'company_code': service.company_code,
                         'company_name': service.company_name,
                         'transport_mode': service.transport_mode,
                         'transport_mode_description': service.transport_mode_description,
                         'servicenumber': service.servicenumber,
+                        'first_departure': first_departure,
+                        'last_arrival': last_arrival
                        }
 
         self.redis.hmset('%s:info' % key_prefix, service_data)
