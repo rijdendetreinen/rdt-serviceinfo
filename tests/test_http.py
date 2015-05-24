@@ -88,27 +88,6 @@ class HttpTest(unittest.TestCase):
             self.assertTrue(str(service.servicenumber) in http_services["services"])
 
 
-    def test_get_services_transport(self):
-        """
-        Test to retrieve all services for a given transport_mode
-        """
-
-        http_services_ic = http.get_transport_services(
-            servicedate="2015-04-01", transport_mode='ic')
-
-        http_services_spr = http.get_transport_services(
-            servicedate="2015-04-01", transport_mode='spr')
-
-        self.assertTrue("services" in http_services_ic)
-        self.assertTrue("services" in http_services_spr)
-
-        self.assertEqual(len(http_services_ic['services']), len(self.test_services))
-        self.assertEqual(len(http_services_spr['services']), 0)
-
-        for service in self.test_services:
-            self.assertTrue(str(service.servicenumber) in http_services_ic["services"])
-
-
     def test_get_services_sorted(self):
         bottle.request.query.sort = 'true'
         http_services = http.get_services(servicedate="2015-04-01")

@@ -23,6 +23,7 @@ import logging.config
 import argparse
 import datetime
 import zmq
+import pytz
 
 import serviceinfo.common
 import serviceinfo.util
@@ -36,16 +37,17 @@ def get_services(config):
     logging.debug("About to retrieve services from schedule store")
 
     store = serviceinfo.service_store.ServiceStore(config['schedule_store'])
-    servicedate = get_servicedate()
-    services = store.get_service_numbers(servicedate)
+    from_time = datetime.datetime.now(pytz.utc)
+    to_time = from_time + datetime.timedelta(minutes=config['injector']['window'])
+    services = store.get_services_between(from_time, to_time)
 
-    for servicenumber in services:
-        found_services = store.get_service(servicedate.strftime('%Y-%m-%d'), servicenumber)
-        for service in found_services:
-            if service_filter.match_filter(service, config['injector']['selection']):
-                filtered_services.append(service)
+    logging.debug("Found %s services in time window", len(services))
 
-    logging.debug("Found %s services elegible for injecting", len(filtered_services))
+    for service in services:
+        if service_filter.match_filter(service, config['injector']['selection']):
+            filtered_services.append(service)
+
+    logging.debug("Found %s services eligible for injecting", len(filtered_services))
     return filtered_services
 
 

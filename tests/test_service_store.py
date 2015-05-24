@@ -110,6 +110,68 @@ class ServiceStoreTests(unittest.TestCase):
         self.assertIsNone(self.store.get_service(self.service_date_str, "1234"))
 
 
+    def test_retrieve_metadata(self):
+        service = self._prepare_service("991234")
+        self.store.store_services([service], self.store.TYPE_ACTUAL)
+
+        retrieved_services = self.store.get_service_metadata(self.service_date_str, "991234", self.store.TYPE_ACTUAL)
+        self.assertEquals(retrieved_services[0], self.store.TYPE_ACTUAL)
+        self.assertEqual(len(retrieved_services[1]), 1)
+
+        # Retrieving as TYPE_ACTUAL_OR_SCHEDULED should return the same:
+        retrieved_services_multi = self.store.get_service_metadata(self.service_date_str, "991234", self.store.TYPE_ACTUAL_OR_SCHEDULED)
+        self.assertEquals(retrieved_services, retrieved_services_multi)
+
+        retrieved_service = retrieved_services[1][0][1]
+        self.assertEquals(retrieved_service['servicenumber'], '991234')
+
+        # Delete service:
+        self.store.delete_service(self.service_date_str, "991234", self.store.TYPE_ACTUAL)
+
+        # Verify deletion:
+        self.assertIsNone(self.store.get_service(self.service_date_str, "991234"))
+
+        # Non-existing service should return None:
+        retrieved_service = self.store.get_service_metadata(self.service_date_str, "991234", self.store.TYPE_ACTUAL_OR_SCHEDULED)
+        self.assertIsNone(retrieved_service)
+
+
+
+    def test_get_services_between(self):
+        service = self._prepare_service("11155")
+        self.store.store_services([service], self.store.TYPE_SCHEDULED)
+
+        time1 = service.stops[0].departure_time
+        time2 = service.stops[2].arrival_time
+
+        # Should all return:
+        services = self.store.get_services_between(time1, time2)
+        self.assertEquals(len(services), 1)
+
+        services = self.store.get_services_between(time1, time1)
+        self.assertEquals(len(services), 1)
+
+        services = self.store.get_services_between(time2, time2)
+        self.assertEquals(len(services), 1)
+
+        services = self.store.get_services_between(time1 - datetime.timedelta(minutes=1), time1)
+        self.assertEquals(len(services), 1)
+
+        # Should all NOT return:
+        services = self.store.get_services_between(time1 - datetime.timedelta(minutes=2), time1 - datetime.timedelta(minutes=1))
+        self.assertEquals(len(services), 0)
+
+        services = self.store.get_services_between(time2 + datetime.timedelta(minutes=1), time2 + datetime.timedelta(minutes=2))
+        self.assertEquals(len(services), 0)
+
+        services = self.store.get_services_between(time2, time1)
+        self.assertEquals(len(services), 0)
+
+        # Delete service:
+        self.store.delete_service(self.service_date_str, "11155", self.store.TYPE_SCHEDULED)
+        self.assertIsNone(self.store.get_service(self.service_date_str, "11155"))
+
+
     def test_delete_nonexisting(self):
         # Assure that this service id does not exist:
         non_existing_id = 123456
@@ -237,60 +299,6 @@ class ServiceStoreTests(unittest.TestCase):
         self.assertTrue(self.service_date_str in all_dates)
 
         self.store.delete_service(self.service_date_str, "987", self.store.TYPE_SCHEDULED)
-
-
-    def test_transportmodes(self):
-        """
-        Test whether all services are correctly returned by
-        get_servicenumbers_transport()
-        """
-
-        scheduled_services = []
-        scheduled_services.append(self._prepare_service("1987"))
-        scheduled_services.append(self._prepare_service("1789"))
-
-        self.store.store_services(scheduled_services, self.store.TYPE_SCHEDULED)
-
-        # Make various calls to store.get_servicenumbers_transport():
-        transport_ic_upper = self.store.get_servicenumbers_transport(
-            self.service_date_str, "IC", self.store.TYPE_SCHEDULED)
-
-        transport_ic = self.store.get_servicenumbers_transport(
-            self.service_date_str, "ic", self.store.TYPE_SCHEDULED)
-
-        transport_ic_actual = self.store.get_servicenumbers_transport(
-            self.service_date_str, "ic", self.store.TYPE_ACTUAL)
-
-        transport_ic_combined = self.store.get_servicenumbers_transport(
-            self.service_date_str, "ic", self.store.TYPE_ACTUAL_OR_SCHEDULED)
-
-        transport_spr = self.store.get_servicenumbers_transport(
-            self.service_date_str, "spr", self.store.TYPE_SCHEDULED)
-
-        # Uppercase/lowercase should not make a difference:
-        self.assertEqual(len(transport_ic_upper), len(transport_ic))
-
-        # 'IC' should return two services, for both actual and combined:
-        self.assertEqual(len(transport_ic), 2)
-        self.assertEqual(len(transport_ic_combined), 2)
-
-        # 'Spr' and IC-actual should not return services:
-        self.assertEqual(len(transport_spr), 0)
-        self.assertEqual(len(transport_ic_actual), 0)
-
-        # Verify returned IC services:
-        for scheduled_service in scheduled_services:
-            self.assertTrue(scheduled_service.servicenumber in transport_ic)
-
-        # Remove inserted services:
-        for scheduled_service in scheduled_services:
-            self.store.delete_service(self.service_date_str,
-                scheduled_service.servicenumber, self.store.TYPE_SCHEDULED)
-
-        # Verify that no service is left behind:
-        transport_ic_combined = self.store.get_servicenumbers_transport(
-            self.service_date_str, "ic")
-        self.assertEqual(len(transport_ic_combined), 0)
 
 
     def test_servicenumbers(self):

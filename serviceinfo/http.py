@@ -27,24 +27,6 @@ def get_services(servicedate):
     return __send_servicenumbers_list(services)
 
 
-@bottle.route('/service-transport/<servicedate>/<transport_mode>')
-def get_transport_services(servicedate, transport_mode):
-    """
-    Retrieve a list of all services on a given date
-    for a given transport mode
-    """
-
-    # Prepare the store and store_type:
-    store, store_type = __prepare_lookup()
-
-    # Retrieve all services for the given transport mode:
-    services = store.get_servicenumbers_transport(
-        servicedate, transport_mode, store_type)
-
-    # Send list:
-    return __send_servicenumbers_list(services)
-
-
 def __prepare_lookup():
     """
     Prepare a lookup request: initialize a service store object,

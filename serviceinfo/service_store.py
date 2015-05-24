@@ -50,15 +50,6 @@ class ServiceStore(object):
         self.redis.sadd('services:%s:%s' % (service_type,
             service.get_servicedate_str()), service.servicenumber)
 
-        # Add to transportmode list:
-        transport_mode = service.transport_mode
-        if transport_mode != None:
-            transport_mode = transport_mode.lower()
-
-        self.redis.sadd('services:%s:%s:transport_mode:%s' % (service_type,
-            service.get_servicedate_str(), transport_mode),
-            service.servicenumber)
-
         # Check whether service did already exist:
         if self.redis.sismember('services:%s:%s:%s' % (service_type,
             service.get_servicedate_str(), service.servicenumber),
@@ -70,6 +61,11 @@ class ServiceStore(object):
         # Add service details:
         self.redis.sadd('services:%s:%s:%s' % (service_type,
             service.get_servicedate_str(), service.servicenumber),
+            service.service_id)
+
+        # Add schedule ID:
+        self.redis.sadd('schedule:%s:%s' % (service_type,
+            service.get_servicedate_str()),
             service.service_id)
 
         # Determine Redis key prefix:
@@ -169,41 +165,6 @@ class ServiceStore(object):
             return list(self.redis.smembers(key))
 
 
-    def get_servicenumbers_transport(self, servicedate,
-        transport_mode, store_type=TYPE_ACTUAL_OR_SCHEDULED):
-        """
-        Retrieve all service numbers for a given transport mode
-        running on a given servicedate
-
-        Args:
-            servicedate (string): Service date (YYYY-MM-DD)
-            transport_mode (string): Transport mode, e.g. 'IC'
-            store_type (string, optional): Store type
-                (default: both actual and scheduled)
-
-        Returns:
-            list: List of servicenumbers
-        """
-
-        transport_mode = transport_mode.lower()
-
-        if store_type == self.TYPE_ACTUAL_OR_SCHEDULED:
-            # Combine actual and scheduled service numbers:
-            key1 = 'services:%s:%s:transport_mode:%s' % (self.TYPE_ACTUAL,
-                servicedate, transport_mode)
-            key2 = 'services:%s:%s:transport_mode:%s' % (self.TYPE_SCHEDULED,
-                servicedate, transport_mode)
-
-            return list(self.redis.sunion(key1, key2))
-        else:
-            # Retrieve all service numbers for the given date, store_type
-            # and transport_mode:
-            key = 'services:%s:%s:transport_mode:%s' % (store_type,
-                servicedate, transport_mode)
-
-            return list(self.redis.smembers(key))
-
-
     def get_service(self, servicedate, servicenumber, service_type=TYPE_ACTUAL_OR_SCHEDULED):
         """
         Get details for a given servicenumber on a given date.
@@ -219,26 +180,68 @@ class ServiceStore(object):
                 with multiple servicenumbers)
         """
 
+        service_ids = self.get_service_ids(servicedate, servicenumber, service_type)
+        if service_ids is None:
+            return None
+
+        services = []
+        for service_id in service_ids[1]:
+            services.append(self.get_service_details(servicedate, service_id, service_ids[0]))
+
+        return services
+
+
+    def get_service_metadata(self, servicedate, servicenumber, service_type=TYPE_ACTUAL_OR_SCHEDULED):
+        """
+        Get metadata for a given servicenumber on a given date.
+
+        Args:
+            servicedate (datetime.date): Service date
+            servicenumber (int): Service number (e.g. train 1750)
+            type (string, optional): Store type (default: actual if available,
+                otherwise scheduled)
+
+        Returns:
+            tuple: First item is service_type, second item is list of metadata dicts
+        """
+
         if service_type == self.TYPE_ACTUAL_OR_SCHEDULED:
-            service = self.get_service(servicedate, servicenumber, self.TYPE_ACTUAL)
-            if service != None:
-                return service
+            actual = self.get_service_metadata(servicedate, servicenumber, self.TYPE_ACTUAL)
+            if actual is not None:
+                return actual
             else:
-                return self.get_service(servicedate, servicenumber, self.TYPE_SCHEDULED)
+                return self.get_service_metadata(servicedate, servicenumber, self.TYPE_SCHEDULED)
+
+        service_ids = self.get_service_ids(servicedate, servicenumber, service_type)
+        if service_ids is None:
+            return None
 
         services = []
 
+        if service_ids is not None:
+            for service_id in service_ids[1]:
+                services.append((service_id,
+                    self.get_service_metadata_details(servicedate, service_id, service_ids[0])))
+
+        return service_type, services
+
+
+    def get_service_ids(self, service_date, service_number, store_type):
+        if store_type == self.TYPE_ACTUAL_OR_SCHEDULED:
+            service_ids = self.get_service_ids(service_date, service_number, self.TYPE_ACTUAL)
+            if service_ids is not None:
+                return service_ids
+            else:
+                return self.get_service_ids(service_date, service_number, self.TYPE_SCHEDULED)
+
         # Check whether service number exists:
-        if self.redis.sismember('services:%s:%s' % (service_type, servicedate), servicenumber) == False:
+        if self.redis.sismember('services:%s:%s' % (store_type, service_date), service_number):
+            # Retrieve all services for this service number:
+            service_ids = self.redis.smembers('services:%s:%s:%s' % (store_type, service_date, service_number))
+
+            return store_type, service_ids
+        else:
             return None
-
-        # Retrieve all services for this servicenumber:
-        service_ids = self.redis.smembers('services:%s:%s:%s' % (service_type, servicedate, servicenumber))
-
-        for service_id in service_ids:
-            services.append(self.get_service_details(servicedate, service_id, service_type))
-
-        return services
 
 
     def get_service_details(self, servicedate, service_id, service_type):
@@ -310,6 +313,57 @@ class ServiceStore(object):
         return service
 
 
+    def get_service_metadata_details(self, servicedate, service_id, service_type):
+        """
+        Get metadata for a given service_id on a given date.
+
+        Args:
+            servicedate (string): Service date (YYYY-MM-DD)
+            service_id (int): Service id (e.g. id 1) - not to be confused with
+                the servicenumber of a service
+            service_type (string): Store type (TYPE_ACTUAL or TYPE_SCHEDULED)
+
+        Returns:
+            dict with all metadata
+        """
+
+        # Determine Redis key prefix:
+        key = 'schedule:%s:%s:%s:info' % (service_type, servicedate, service_id)
+        service_data = self.redis.hgetall(key)
+
+        if len(service_data) == 0:
+            return None
+
+        return service_data
+
+
+    def get_services_between(self, from_time, to_time):
+        # TODO: determine servicedate(s) for to_time (might be different)
+        service_date = util.get_service_date(from_time)
+        service_date_str = util.datetime_to_iso(service_date)
+        service_numbers = self.get_service_numbers(service_date)
+        services = []
+
+        for service_number in service_numbers:
+            # Check metadate: first_departure and last_arrival between
+            # given time constraints
+            service_metadata = self.get_service_metadata(service_date, service_number)
+            service_type = service_metadata[0]
+
+            for metadata_pair in service_metadata[1]:
+                service_id = metadata_pair[0]
+                metadata = metadata_pair[1]
+
+                # Check whether service runs between from_time and to_time:
+                first_departure = isodate.parse_datetime(metadata['first_departure'])
+                last_arrival = isodate.parse_datetime(metadata['last_arrival'])
+
+                if (first_departure >= from_time and first_departure <= to_time) or (last_arrival >= from_time and last_arrival <= to_time):
+                    services.append(self.get_service_details(service_date_str, service_id, service_type))
+
+        return services
+
+
     def delete_service(self, servicedate, servicenumber, store_type):
         """
         Delete a service from the service store
@@ -354,11 +408,6 @@ class ServiceStore(object):
             self.redis.srem('services:%s:%s' % (store_type, servicedate),
                 servicenumber)
 
-            if service != None:
-                transport_mode = service.transport_mode.lower()
-                self.redis.srem('services:%s:%s:transport_mode:%s' %
-                    (store_type, servicedate, transport_mode), servicenumber)
-
         # Check whether servicedate can be removed:
         if not self.redis.exists('services:%s:%s' % (store_type, servicedate)):
             # Service date not in use anymore, delete it:
@@ -386,6 +435,11 @@ class ServiceStore(object):
         # Delete other information for this service:
         self.redis.delete('%s:stops' % key_prefix)
         self.redis.delete('%s:info' % key_prefix)
+
+        self.redis.srem('schedule:%s:%s' % (store_type,
+            servicedate),
+            service_id)
+
 
 
     def get_service_dates(self, store_type=TYPE_ACTUAL_OR_SCHEDULED):
@@ -434,4 +488,5 @@ class ServiceStore(object):
 
         # Remove service date and service date key:
         self.redis.delete('services:%s:%s' % (store_type, servicedate))
+        self.redis.delete('schedule:%s:%s' % (store_type, servicedate))
         self.redis.srem('services:%s:date' % store_type, servicedate)
