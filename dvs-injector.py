@@ -34,7 +34,7 @@ import serviceinfo.injection as injection
 
 def get_services(config):
     filtered_services = []
-    logging.debug("About to retrieve services from schedule store")
+    logging.debug("Retrieving services from schedule store")
 
     store = serviceinfo.service_store.ServiceStore(config['schedule_store'])
     from_time = datetime.datetime.now(pytz.utc)
@@ -59,7 +59,7 @@ def get_departures(services, config):
             if service_filter.departure_time_window(stop, config['injector']['window']):
                 departures.append((service, stop))
 
-    logging.debug("Found %s departures elegible for injecting", len(departures))
+    logging.debug("Found %s departures eligible for injecting", len(departures))
     return departures
 
 
@@ -77,16 +77,17 @@ def inject_stops(stops, config):
     inject_count = 0
 
     for (service, stop) in stops:
+        logging.debug("Injecting service %s", service)
         inject = injection.Injection(service, stop)
         client.send_json(inject.as_dict())
 
         if poller.poll(5000):
-            result = client.recv_pyobj()
+            result = client.recv_json()
         else:
             logging.error("DVS server timeout, injections aborted")
             break
 
-        if result is not True:
+        if 'result' not in result or result['result'] is not True:
             logging.error("Server did not respond successfully while injecting service %s, stop %s", service, stop)
         else:
             inject_count += 1
