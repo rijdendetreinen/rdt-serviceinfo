@@ -77,7 +77,7 @@ def inject_stops(stops, config):
     inject_count = 0
 
     for (service, stop) in stops:
-        logging.debug("Injecting service %s", service)
+        logging.debug("Injecting service %s at stop %s", service, stop)
         inject = injection.Injection(service, stop)
         client.send_json(inject.as_dict())
 
