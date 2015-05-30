@@ -87,7 +87,8 @@ class IffSource(object):
 
         cursor = self.connection.cursor()
         cursor.execute("""
-            SELECT ts.serviceid, t_sv.servicenumber, ts.station, s.name, ts.arrivaltime, ts.departuretime,
+            SELECT ts.serviceid, t_sv.servicenumber, t_sv.variant,
+                ts.station, s.name, ts.arrivaltime, ts.departuretime,
                 p.arrival AS arrival_platform, p.departure AS departure_platform,
                 tt.transmode, tm.description AS transmode_description,
                 c.code AS company_code, c.name AS company_name
@@ -120,24 +121,28 @@ class IffSource(object):
         for row in cursor:
             servicenumber = row[1]
 
+            if servicenumber == 0 and row[2] > 0 and row[2] != '':
+                # Use variant:
+                servicenumber = row[2]
+
             # Add servicenumber to list if it doesn't exist already
             if servicenumber not in servicenumbers:
                 servicenumbers.append(servicenumber)
 
             if metadata_set == False:
-                company_code = row[10]
-                company_name = row[11]
-                transport_mode = row[8]
-                transport_mode_description = row[9]
+                company_code = row[11]
+                company_name = row[12]
+                transport_mode = row[9]
+                transport_mode_description = row[10]
 
                 metadata_set = True
 
-            stop = data.ServiceStop(row[2].lower())
-            stop.stop_name = row[3]
-            stop.arrival_time = util.parse_sql_time(service_date, row[4], self.timezone)
-            stop.departure_time = util.parse_sql_time(service_date, row[5], self.timezone)
-            stop.scheduled_arrival_platform = row[6]
-            stop.scheduled_departure_platform = row[7]
+            stop = data.ServiceStop(row[3].lower())
+            stop.stop_name = row[4]
+            stop.arrival_time = util.parse_sql_time(service_date, row[5], self.timezone)
+            stop.departure_time = util.parse_sql_time(service_date, row[6], self.timezone)
+            stop.scheduled_arrival_platform = row[7]
+            stop.scheduled_departure_platform = row[8]
             stop.servicenumber = row[1]
 
             # Check whether previous stop is not the same stop
