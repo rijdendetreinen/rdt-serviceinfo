@@ -8,6 +8,7 @@ information about services can be stored.
 
 import redis
 import isodate
+import logging
 
 from serviceinfo.data import Service, ServiceStop
 import serviceinfo.util as util
@@ -23,6 +24,8 @@ class ServiceStore(object):
     TYPE_ACTUAL = 'actual'
     TYPE_ACTUAL_OR_SCHEDULED = 'actual_scheduled'
 
+    logger = None
+
     def __init__(self, config):
         """
         Initialize the ServiceStore. config must be a valid configuration
@@ -31,6 +34,8 @@ class ServiceStore(object):
 
         self.redis = redis.Redis(host=config['host'],
             port=config['port'], db=config['database'])
+
+        self.logger = logging.getLogger()
 
 
     def store_service(self, service, service_type):
@@ -359,7 +364,12 @@ class ServiceStore(object):
                 last_arrival = isodate.parse_datetime(metadata['last_arrival'])
 
                 if (first_departure >= from_time and first_departure <= to_time) or (last_arrival >= from_time and last_arrival <= to_time):
-                    services.append(self.get_service_details(service_date_str, service_id, service_type))
+                    try:
+                        services.append(self.get_service_details(service_date_str, service_id, service_type))
+                    except KeyError as exception:
+                        self.logger.warn("Could not retrieve full data for service %s:%s:%s: key error for %s",
+                                         service_type, service_date_str, service_id, exception)
+
 
         return services
 
@@ -384,8 +394,13 @@ class ServiceStore(object):
             servicedate, servicenumber))
 
         # Retrieve a single service element to retrieve some metadata:
-        service = self.get_service_details(servicedate,
-            list(service_ids)[0], store_type)
+        try:
+            service = self.get_service_details(servicedate,
+                list(service_ids)[0], store_type)
+        except KeyError as exception:
+            self.logger.warn("Service %s:%s:%s not retrievable while deleting: key error for %s",
+                             store_type, servicedate, servicenumber, exception)
+            service = None
 
         # Iterate over service ID's, delete them one by one:
         for service_id in service_ids:
