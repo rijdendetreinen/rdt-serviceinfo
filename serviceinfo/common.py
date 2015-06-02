@@ -11,7 +11,7 @@ import sys
 
 configuration = {}
 
-def setup_logging(default_level=logging.INFO, env_key='LOG_CFG'):
+def setup_logging(application, default_level=logging.INFO, env_key='LOG_CFG'):
     """
     Setup logging. Uses the configuration loaded earlier.
     """
@@ -31,6 +31,14 @@ def setup_logging(default_level=logging.INFO, env_key='LOG_CFG'):
     if path != None and os.path.exists(path):
         with open(path, 'r') as config_file:
             log_config = yaml.load(config_file.read())
+
+        # Translate log filename with logs/%(application)s to real application name:
+        for handler in log_config['handlers']:
+            if 'filename' in log_config['handlers'][handler]:
+                log_config['handlers'][handler]['filename'] = log_config['handlers'][handler]['filename'] % {
+                    'application': application
+                }
+
         logging.config.dictConfig(log_config)
     else:
         logging.basicConfig(level=default_level)

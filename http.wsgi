@@ -26,6 +26,6 @@ import serviceinfo.http
 
 # Load configuration:
 serviceinfo.common.load_config(sys.argv[1])
-serviceinfo.common.setup_logging()
+serviceinfo.common.setup_logging('http-wsgi')
 
 application = bottle.default_app()

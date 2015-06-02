@@ -424,7 +424,7 @@ def main():
 
     # Load configuration:
     serviceinfo.common.load_config(args.configFile)
-    serviceinfo.common.setup_logging()
+    serviceinfo.common.setup_logging('iff-converter')
 
     logging.info("Parsing IFF delivery")
     parse_delivery()

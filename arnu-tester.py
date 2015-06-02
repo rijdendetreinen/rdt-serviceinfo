@@ -83,7 +83,7 @@ def main():
 
     # Load configuration:
     serviceinfo.common.load_config(args.configFile)
-    serviceinfo.common.setup_logging()
+    serviceinfo.common.setup_logging('arnu-tester')
 
     # Get logger instance:
     logger = logging.getLogger(__name__)

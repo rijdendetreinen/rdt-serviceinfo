@@ -86,7 +86,7 @@ def main():
 
     # Load configuration:
     serviceinfo.common.load_config(args.configFile)
-    serviceinfo.common.setup_logging()
+    serviceinfo.common.setup_logging('cleanup')
 
     # Test store type:
     if args.store not in ['actual', 'scheduled', 'all']:
