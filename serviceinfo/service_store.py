@@ -6,9 +6,9 @@ Services are stored in a Redis instance. Both scheduled and real-time (actual)
 information about services can be stored.
 """
 
-import redis
 import isodate
 import logging
+import common
 
 from serviceinfo.data import Service, ServiceStop
 import serviceinfo.util as util
@@ -32,9 +32,7 @@ class ServiceStore(object):
         dictionary, containing the Redis connection configuration.
         """
 
-        self.redis = redis.Redis(host=config['host'],
-            port=config['port'], db=config['database'])
-
+        self.redis = common.get_redis(config)
         self.logger = logging.getLogger()
 
 

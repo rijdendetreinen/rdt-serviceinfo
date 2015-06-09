@@ -8,6 +8,7 @@ import logging.config
 import yaml
 import os
 import sys
+import redis
 
 configuration = {}
 
@@ -63,3 +64,11 @@ def load_config(config_file_path):
         sys.exit(1)
 
     return configuration
+
+
+def get_redis(config):
+    instance = redis.Redis(host=config['host'],
+            port=config['port'], db=config['database'])
+
+    return instance
+
