@@ -65,11 +65,15 @@ class WorkerThread(threading.Thread):
     """
 
     logger = None
+    redis = None
     store = None
     iff = None
 
     def __init__ (self):
         self.logger = logging.getLogger(__name__)
+
+        self.logger.debug('Initializing Redis instance')
+        self.redis = serviceinfo.common.get_redis(serviceinfo.common.configuration['schedule_store'])
 
         self.logger.debug('Initializing store')
         self.store = serviceinfo.service_store.ServiceStore(serviceinfo.common.configuration['schedule_store'])
@@ -100,6 +104,10 @@ class WorkerThread(threading.Thread):
                     for service in services:
                         self.store.store_service(service, self.store.TYPE_ACTUAL)
                         self.logger.debug('New information for service %s', service.service_id)
+
+                        self.redis.incr("stats:services")
+
+                    self.redis.incr("stats:messages")
                 except MySQLdb.OperationalError as exception:
                     self.logger.error(
                         'MySQL error, message not processed. %s', exception)
