@@ -5,12 +5,9 @@ Module to record numbers of processed items and retrieve some basis statistics
 about the service store.
 """
 
-import isodate
 import logging
 import common
-
-from serviceinfo.data import Service, ServiceStop
-import serviceinfo.util as util
+import redis
 
 class Statistics(object):
     logger = None
@@ -44,4 +41,9 @@ class Statistics(object):
             return int(value)
 
     def _increment_counter(self, counter):
-        self.redis.incr(counter)
+        try:
+            self.redis.incr(counter)
+        except redis.ResponseError as e:
+            # Wrap around max 64bit:
+            if e.message == 'increment or decrement would overflow':
+                self.redis.set(counter, 0)
