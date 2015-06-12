@@ -9,11 +9,15 @@ import logging
 import common
 import redis
 
+import service_store
+
 class Statistics(object):
+    config = None
     logger = None
 
     def __init__(self, config):
-        self.redis = common.get_redis(config)
+        self.config = config
+        self.redis = common.get_redis(self.config)
         self.logger = logging.getLogger()
 
     def get_processed_messages(self):
@@ -31,6 +35,13 @@ class Statistics(object):
     def reset_counters(self):
         self.redis.delete("stats:messages")
         self.redis.delete("stats:services")
+
+    def get_stored_services(self, store_type):
+        store = service_store.ServiceStore(self.config)
+        number = 0
+        for date in store.get_service_dates(store_type):
+            number += len(store.get_service_numbers(date, store_type))
+        return number
 
     def _get_counter(self, counter):
         value = self.redis.get(counter)

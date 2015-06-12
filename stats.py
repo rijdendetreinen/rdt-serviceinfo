@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import argparse
+import sys
 
 import serviceinfo.common
 import serviceinfo.statistics
@@ -41,3 +42,10 @@ if args.COUNTER == 'messages':
     print stats.get_processed_messages()
 elif args.COUNTER == 'services':
     print stats.get_processed_services()
+elif args.COUNTER == 'actual_services':
+    print stats.get_stored_services('actual')
+elif args.COUNTER == 'scheduled_services':
+    print stats.get_stored_services('scheduled')
+else:
+    print "Unknown type"
+    sys.exit(1)
