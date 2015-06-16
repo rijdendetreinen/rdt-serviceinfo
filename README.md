@@ -40,6 +40,7 @@ To install, run through the following steps:
 0. Download or clone this repository to a directory of your choice, `git clone git@github.com:geertw/rdt-serviceinfo.git`.
 0. Copy the .dist files in the [config](config) directory and edit them to match your details.
    At least, you need to configure the MySQL and Redis connection details.
+0. Create MySQL tables for the IFF database, use [doc/create-tables.sql](/doc/create-tables.sql)
 0. Download the IFF files and unpack them, the default folder in the converter-script is `cache/dataset`
 0. Convert the IFF files by running `iff-converter.py`
 0. Import the generated TSV files
