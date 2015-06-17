@@ -97,6 +97,8 @@ CREATE TABLE `timetable_attribute` (
   KEY `serviceid` (`serviceid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+INSERT INTO `timetable_attribute` (`serviceid`, `code`, `firststop`, `laststop`) VALUES
+(1,	'NIIN',	4,	5);
 
 CREATE TABLE `timetable_platform` (
   `serviceid` int(11) NOT NULL DEFAULT '0',
@@ -210,6 +212,9 @@ CREATE TABLE `trnsattr` (
   PRIMARY KEY (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+INSERT INTO `trnsattr` (`code`, `processingcode`, `description`) VALUES
+('NIIN',	7,	'Niet instappen voor reizigers'),
+('NUIT',	6,	'Niet uitstappen voor reizigers');
 
 CREATE TABLE `trnsmode` (
   `code` varchar(4) CHARACTER SET utf8 NOT NULL,
