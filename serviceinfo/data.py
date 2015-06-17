@@ -75,10 +75,12 @@ class ServiceStop(object):
     cancelled_arrival = False
     cancelled_departure = False
     servicenumber = 0
+    attributes = []
 
     def __init__(self, stop_code, stop_name=None):
         self.stop_code = stop_code
         self.stop_name = stop_name
+        self.attributes = []
 
     def __repr__(self):
         return "<ServiceStop @ %s>" % self.stop_code
@@ -93,3 +95,15 @@ class ServiceStop(object):
             return self.actual_departure_platform
         else:
             return self.scheduled_departure_platform
+
+class Attribute(object):
+    code = None
+    description = None
+    processing_code = None
+
+    CODE_BOARDING_ONLY = 6
+    CODE_UNBOARDING_ONLY = 7
+
+    def __init__(self, code, description):
+        self.code = code
+        self.description = description

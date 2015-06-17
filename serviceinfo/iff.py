@@ -91,7 +91,8 @@ class IffSource(object):
                 ts.station, s.name, ts.arrivaltime, ts.departuretime,
                 p.arrival AS arrival_platform, p.departure AS departure_platform,
                 tt.transmode, tm.description AS transmode_description,
-                c.code AS company_code, c.name AS company_name
+                c.code AS company_code, c.name AS company_name,
+                ts.idx
 
             FROM timetable_stop ts
             JOIN station s ON ts.station = s.shortname
@@ -116,6 +117,9 @@ class IffSource(object):
         metadata_set = False
         servicenumber = 0
         stops = []
+
+        # Get attributes for this service:
+        attributes = self._get_service_attributes(service_id)
 
         # Retrieve all stops for this service:
         for row in cursor:
@@ -144,6 +148,12 @@ class IffSource(object):
             stop.scheduled_arrival_platform = row[7]
             stop.scheduled_departure_platform = row[8]
             stop.servicenumber = row[1]
+
+            # Check attributes:
+            stop_idx = row[13]
+            for attribute in attributes:
+                if attribute[0] <= stop_idx and attribute[1] >= stop_idx:
+                    stop.attributes.append(attribute[2])
 
             # Check whether previous stop is not the same stop
             # (preventing duplicate stops):
@@ -177,6 +187,23 @@ class IffSource(object):
 
         return services
 
+    def _get_service_attributes(self, service_id):
+        cursor = self.connection.cursor()
+        cursor.execute("""
+            SELECT ta.code, a.description, a.processingcode, ta.firststop, ta.laststop
+            FROM timetable_attribute ta
+            JOIN trnsattr a ON ta.code = a.code
+            WHERE ta.serviceid = %s
+            """, [service_id])
+
+        attributes = []
+
+        for row in cursor:
+            attribute_object = data.Attribute(row[0], row[1])
+            attribute_object.processing_code = row[2]
+            attributes.append((row[3], row[4], attribute_object))
+
+        return attributes
 
     def get_services_details(self, service_ids, service_date):
         """
