@@ -96,6 +96,17 @@ class ServiceStop(object):
         else:
             return self.scheduled_departure_platform
 
+    def get_attribute_dicts(self):
+        attrs = []
+        for attribute in self.attributes:
+            attrs.append(attribute.get_dict())
+        return attrs
+
+    def set_attribute_dicts(self, dicts):
+        self.attributes = []
+        for attribute in dicts:
+            self.attributes.append(Attribute.from_dict(attribute))
+
 class Attribute(object):
     code = None
     description = None
@@ -107,3 +118,14 @@ class Attribute(object):
     def __init__(self, code, description):
         self.code = code
         self.description = description
+
+    def get_dict(self):
+        return {"code": self.code,
+                "description": self.description,
+                "processing_code": self.processing_code}
+
+    @staticmethod
+    def from_dict(dict):
+        attr = Attribute(dict['code'], dict['description'])
+        attr.processing_code = dict['processing_code']
+        return attr

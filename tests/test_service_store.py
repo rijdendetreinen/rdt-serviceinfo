@@ -110,6 +110,57 @@ class ServiceStoreTests(unittest.TestCase):
         # Verify deletion:
         self.assertIsNone(self.store.get_service(self.service_date_str, "1234"))
 
+    def test_retrieve_attributes(self):
+        attr_do_not_board = data.Attribute("NIIN", "Niet instappen")
+        attr_do_not_board.processing_code = data.Attribute.CODE_UNBOARDING_ONLY
+        attr_do_not_alight = data.Attribute("NUIT", "Niet uitstappen")
+        attr_do_not_board.processing_code = data.Attribute.CODE_BOARDING_ONLY
+
+        service1 = self._prepare_service("4444")
+        service2 = self._prepare_service("4445")
+
+        service1.stops[0].attributes.append(attr_do_not_board)
+        service1.stops[2].attributes.append(attr_do_not_alight)
+
+        service2.stops[1].attributes.append(attr_do_not_board)
+        service2.stops[1].attributes.append(attr_do_not_alight)
+
+        self.store.store_services([service1, service2], self.store.TYPE_SCHEDULED)
+
+        retrieved_services_1 = self.store.get_service(self.service_date_str, "4444", self.store.TYPE_SCHEDULED)
+        retrieved_services_2 = self.store.get_service(self.service_date_str, "4445", self.store.TYPE_SCHEDULED)
+        self.assertEqual(len(retrieved_services_1), 1)
+        self.assertEqual(len(retrieved_services_2), 1)
+
+        retrieved_service_1 = retrieved_services_1[0]
+        self._assert_service_equal(service1, retrieved_service_1)
+
+        retrieved_service_2 = retrieved_services_2[0]
+        self._assert_service_equal(service2, retrieved_service_2)
+
+        # Verify attributes:
+        self.assertEquals(len(retrieved_service_1.stops[0].attributes), 1)
+        self.assertEquals(len(retrieved_service_1.stops[1].attributes), 0)
+        self.assertEquals(len(retrieved_service_1.stops[2].attributes), 1)
+
+        self.assertEquals(retrieved_service_1.stops[0].attributes[0].code, "NIIN")
+        self.assertEquals(retrieved_service_1.stops[0].attributes[0].processing_code, attr_do_not_board.processing_code)
+        self.assertEquals(retrieved_service_1.stops[0].attributes[0].description, attr_do_not_board.description)
+
+        self.assertEquals(len(retrieved_service_2.stops[0].attributes), 0)
+        self.assertEquals(len(retrieved_service_2.stops[1].attributes), 2)
+        self.assertEquals(len(retrieved_service_2.stops[2].attributes), 0)
+        self.assertEquals(retrieved_service_2.stops[1].attributes[0].description, attr_do_not_board.description)
+        self.assertEquals(retrieved_service_2.stops[1].attributes[1].processing_code, attr_do_not_alight.processing_code)
+
+        # Delete services:
+        self.store.delete_service(self.service_date_str, "4444", self.store.TYPE_SCHEDULED)
+        self.store.delete_service(self.service_date_str, "4445", self.store.TYPE_SCHEDULED)
+
+        # Verify deletion:
+        self.assertIsNone(self.store.get_service(self.service_date_str, "4444"))
+        self.assertIsNone(self.store.get_service(self.service_date_str, "4445"))
+
     def test_retrieve_metadata(self):
         service = self._prepare_service("991234")
         self.store.store_services([service], self.store.TYPE_ACTUAL)

@@ -9,6 +9,7 @@ information about services can be stored.
 import isodate
 import logging
 import common
+import json
 
 from serviceinfo.data import Service, ServiceStop
 import serviceinfo.util as util
@@ -99,7 +100,7 @@ class ServiceStore(object):
         # Add stops:
         for stop in service.stops:
             # Do not add services which do not stop at a station:
-            if stop.arrival_time == None and stop.departure_time == None:
+            if stop.arrival_time is None and stop.departure_time is None:
                 continue
 
             # Add service and metadata
@@ -118,6 +119,7 @@ class ServiceStore(object):
                          'cancelled_arrival': stop.cancelled_arrival,
                          'cancelled_departure': stop.cancelled_departure,
                          'servicenumber': stop.servicenumber,
+                         'attributes': json.dumps(stop.get_attribute_dicts()),
                          }
 
             # Translate None to empty strings:
@@ -310,6 +312,10 @@ class ServiceStore(object):
             service_stop.cancelled_arrival = (data['cancelled_arrival'] == 'True')
             service_stop.cancelled_departure = (data['cancelled_departure'] == 'True')
             service_stop.servicenumber = data['servicenumber']
+
+            if 'attributes' in data:
+                attributes = json.loads(data['attributes'])
+                service_stop.set_attribute_dicts(attributes)
 
             service.stops.append(service_stop)
 
