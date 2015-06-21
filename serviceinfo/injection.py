@@ -7,6 +7,9 @@ allowing them to be injected into other applications.
 
 import isodate
 
+import data
+import util
+
 class Injection:
     """
     Class for constructing Injection dicts to other applications.
@@ -19,12 +22,10 @@ class Injection:
     max_via = 3
     upcoming_stops = None
 
-
     def __init__(self, service, stop):
         self.service = service
         self.stop = stop
         self.process_upcoming_stops()
-
 
     def as_dict(self):
         """
@@ -40,11 +41,11 @@ class Injection:
         inject['service_date'] = self.service.get_servicedate_str()
         inject['destination_text'] = self.service.get_destination().stop_name
         inject['destination_code'] = self.service.get_destination_str()
-        inject['do_not_board'] = False #TODO
+        inject['do_not_board'] = self.is_no_boarding()
         inject['transmode_code'] = self.service.transport_mode
         inject['transmode_text'] = self.service.transport_mode_description
         inject['company'] = self.service.company_name
-        inject['departure'] = isodate.datetime_isoformat(self.stop.departure_time)
+        inject['departure'] = util.datetime_to_iso(self.stop.departure_time)
         inject['stop_code'] = self.stop.stop_code
         inject['platform'] = self.stop.get_departure_platform()
         inject['via'] = self.get_via_stops()
@@ -52,6 +53,17 @@ class Injection:
 
         return inject
 
+    def is_no_boarding(self):
+        """
+        Process attributes, returns True when an attribute "Do not board" is
+        set for the current stop
+        """
+
+        for attribute in self.stop.attributes:
+            if attribute.processing_code == data.Attribute.CODE_UNBOARDING_ONLY:
+                return True
+
+        return False
 
     def process_upcoming_stops(self):
         """
@@ -73,7 +85,6 @@ class Injection:
         self.upcoming_stops = []
         for stop in stops:
             self.upcoming_stops.append((stop.stop_code, stop.stop_name))
-
 
     def get_via_stops(self):
         """

@@ -48,7 +48,6 @@ class InjectionTest(unittest.TestCase):
 
         return service
 
-
     def test_dict(self):
         service = self._prepare_service(123)
         stop = service.stops[0]
@@ -63,7 +62,6 @@ class InjectionTest(unittest.TestCase):
         self.assertEqual(inject["transmode_text"], service.transport_mode_description)
         self.assertEqual(inject["platform"], "5b")
         self.assertEqual(inject["stop_code"], "ut")
-
 
     def test_via(self):
         # Test upcoming stops and via route
@@ -109,6 +107,32 @@ class InjectionTest(unittest.TestCase):
         self.assertEquals(len(upcoming_stops), 1)
         self.assertEquals(upcoming_stops[0][0], 'stat14')
 
+    def test_attributes(self):
+        # Prepare attributes:
+        attr_no_boarding = data.Attribute("NIIN", "Do not board")
+        attr_no_boarding.processing_code = data.Attribute.CODE_UNBOARDING_ONLY
+        attr_no_unboarding = data.Attribute("NUIT", "Do not alight")
+        attr_no_unboarding.processing_code = data.Attribute.CODE_BOARDING_ONLY
+
+        # Prepare service:
+        service = self._prepare_service(123)
+        service.stops[0].attributes.append(attr_no_boarding)
+        service.stops[1].attributes.append(attr_no_unboarding)
+        service.stops[2].attributes.append(attr_no_boarding)
+        service.stops[2].attributes.append(attr_no_unboarding)
+
+        # Test various injection dicts:
+        stop = service.stops[0]
+        inject = injection.Injection(service, stop).as_dict()
+        self.assertTrue(inject['do_not_board'])
+
+        stop = service.stops[1]
+        inject = injection.Injection(service, stop).as_dict()
+        self.assertFalse(inject['do_not_board'])
+
+        stop = service.stops[2]
+        inject = injection.Injection(service, stop).as_dict()
+        self.assertTrue(inject['do_not_board'])
 
 if __name__ == '__main__':
     unittest.main()
