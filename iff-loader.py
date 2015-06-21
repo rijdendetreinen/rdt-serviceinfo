@@ -20,7 +20,7 @@ def load_tsv_files():
 
     tables = ['changes', 'company', 'connmode', 'contconn', 'country',
         'delivery', 'footnote', 'station', 'timetable_attribute', 'timetable_platform', 'timetable_service',
-        'timetable_stop', 'timezone', 'trnsaqst', 'trnsattr', 'trnsmode'
+        'timetable_stop', 'timezone', 'trnsaqst', 'trnsattr', 'trnsmode', 'timetable_transport', 'timetable_validity'
         ]
 
     # Create tables if asked
@@ -47,7 +47,7 @@ def load_tsv_files():
     warnings.filterwarnings('ignore', category = MySQLdb.Warning)
     for t in tables:
         logging.info("""Loading %s.tsv into table %s""" % (t, t))
-        q = """LOAD DATA LOCAL INFILE '%s/%s.tsv' INTO TABLE %s FIELDS TERMINATED BY '\t'""" % (PARSED_FILES_PATH, t, t)
+        q = """LOAD DATA LOCAL INFILE '%s/%s.tsv' INTO TABLE %s FIELDS TERMINATED BY '\t' IGNORE 1 LINES""" % (PARSED_FILES_PATH, t, t)
         c.execute(q)
         connection.commit()
         logging.info("""Loading %s.tsv complete""" % (t))
