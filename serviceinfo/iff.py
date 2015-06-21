@@ -60,7 +60,7 @@ class IffSource(object):
             SELECT DISTINCT ts.serviceid, f.servicedate FROM timetable_service ts
             JOIN timetable_validity tv ON (ts.serviceid = tv.serviceid)
             JOIN footnote f ON (tv.footnote = f.footnote)
-            WHERE f.servicedate = %s;""", service_date.strftime('%Y-%m-%d'))
+            WHERE f.servicedate = %s;""", [service_date.strftime('%Y-%m-%d')])
 
         for row in cursor:
             service_id.append(row[0])
@@ -244,7 +244,7 @@ class IffSource(object):
         cursor = self.connection.cursor()
         cursor.execute("""
             SELECT name FROM station
-            WHERE shortname = %s;""", station_code)
+            WHERE shortname = %s;""", [station_code])
 
         if cursor.rowcount == 0:
             return None
@@ -267,7 +267,7 @@ class IffSource(object):
         cursor = self.connection.cursor()
         cursor.execute("""
             SELECT description FROM trnsmode
-            WHERE code = %s;""", transport_mode)
+            WHERE code = %s;""", [transport_mode])
 
         if cursor.rowcount == 0:
             return None
@@ -292,7 +292,7 @@ class IffSource(object):
         cursor = self.connection.cursor()
         cursor.execute("""
             SELECT name FROM company
-            WHERE code = %s;""", company_code)
+            WHERE code = %s;""", [company_code])
 
         if cursor.rowcount == 0:
             return None
