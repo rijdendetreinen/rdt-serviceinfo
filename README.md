@@ -31,7 +31,9 @@ Installation
 
 This software is tested on Debian and Ubuntu Linux.
 
-Furthermore, you'll need a MySQL server and a Redis instance (they do not to be installed on the same machine). A MySQL database is used to store the complete schedule, and the Redis instance is used to lookup the current service schedule and to store real-time updates about services.
+You'll need a MySQL server and a Redis instance (they do not to be installed on the same machine).
+A MySQL database is used to store the complete schedule (called the IFF schedule).
+The Redis instance is used to lookup today's schedule and to store real-time updates about train services.
 
 To install, run through the following steps:
 
@@ -40,37 +42,35 @@ To install, run through the following steps:
 0. Download or clone this repository to a directory of your choice, `git clone git@github.com:geertw/rdt-serviceinfo.git`.
 0. Copy the .dist files in the [config](config) directory and edit them to match your details.
    At least, you need to configure the MySQL and Redis connection details.
-0. Create MySQL tables for the IFF database, use [doc/create-tables.sql](/doc/create-tables.sql)
-0. Download the IFF files and unpack them, the default folder in the converter-script is `cache/dataset`
+0. Download the IFF files and unpack them, the default folder in the converter script is `cache/dataset`
 0. Convert the IFF files by running `iff-converter.py`
-0. Import the generated TSV files
-
-    ```sql
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/changes.tsv' INTO TABLE changes FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/company.tsv' INTO TABLE company FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/connmode.tsv' INTO TABLE connmode FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/contconn.tsv' INTO TABLE contconn FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/country.tsv' INTO TABLE country FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/delivery.tsv' INTO TABLE delivery FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/footnote.tsv' INTO TABLE footnote FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/station.tsv' INTO TABLE station FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/timetable_attribute.tsv' INTO TABLE timetable_attribute FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/timetable_platform.tsv' INTO TABLE timetable_platform FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/timetable_service.tsv' INTO TABLE timetable_service FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/timetable_stop.tsv' INTO TABLE timetable_stop FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/timezone.tsv' INTO TABLE timezone FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/trnsaqst.tsv' INTO TABLE trnsaqst FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/trnsattr.tsv' INTO TABLE trnsattr FIELDS TERMINATED BY '\t';
-LOAD DATA LOCAL INFILE 'rdt-serviceinfo/cache/iff_parsed/trnsmode.tsv' INTO TABLE trnsmode FIELDS TERMINATED BY '\t';
-    ```
+0. Create the database and import the IFF dataset by running `iff-loader.py --create_tables`
 0. Load the current schedule by running `scheduler.py`.
 0. Receive status updates by running `arnu-listener.py` (in the background, if working correctly).
 0. Provide an HTTP interface by running `http-server.py` (for testing/debugging) or by configuring access to `http.wsgi` (for production).
-0. Set up cronjobs to run cleanup.py and scheduler.py regularly. Both should run once a day.
+
+### Keeping the schedule up-to-date
+
+0. Set up cronjobs to run `cleanup.py` and `scheduler.py` regularly. Both should run once a day.
+    - `cleanup.py` removes old schedules from your Redis database.
+    - `scheduler.py` loads the schedule for today in your Redis database.
+0. Refresh your IFF dataset at least weekly.
+    - Download a new IFF schedule from NDOVloket.
+    - Convert it by running `iff-converter.py`
+    - Load the IFF schedule into MySQL by running `iff-loader.py --truncate_tables`
+
+### Access to static and realtime schedules
 
 Note that you'll need access to both the static schedule and a ZeroMQ server
 distributing service updates. You can get a free subscription by signing up
 with [NDOVloket](https://www.ndovloket.nl/).
+
+From NDOVloket, you need:
+
+- The [NS IFF dataset](https://ndovloket.nl/helpdesk/kb/13/), which contains the (static) train schedule for the whole year.  
+  NDOVloket provides the IFF dataset as a zip file containing all required source files.
+- [AR-NU Ritinfo](https://ndovloket.nl/helpdesk/kb/36/). AR-NU provides you with realtime updates about delayed trains, cancelled trains, etc.  
+  NDOVloket provides the AR-NU message feed via ZeroMQ.
 
 It is recommended to not connect directly to NDOVloket's ZeroMQ server, but
 use some middleware instead called [universal-sub-pubsub](https://github.com/StichtingOpenGeo/universal).
