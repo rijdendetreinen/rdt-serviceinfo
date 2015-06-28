@@ -147,7 +147,7 @@ class IffSource(object):
             stop.departure_time = util.parse_sql_time(service_date, row[6], self.timezone)
             stop.scheduled_arrival_platform = row[7]
             stop.scheduled_departure_platform = row[8]
-            stop.servicenumber = row[1]
+            stop.servicenumber = servicenumber
 
             # Check attributes:
             stop_idx = row[13]
