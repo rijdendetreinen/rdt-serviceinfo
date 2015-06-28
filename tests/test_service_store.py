@@ -240,29 +240,6 @@ class ServiceStoreTests(unittest.TestCase):
         self.assertIsNone(self.store.get_service_details(self.service_date_str, non_existing_id, self.store.TYPE_ACTUAL))
         self.assertIsNone(self.store.get_service_metadata_details(self.service_date_str, non_existing_id, self.store.TYPE_ACTUAL))
 
-    def test_key_error(self):
-        # See also https://github.com/geertw/rdt-serviceinfo/issues/6
-        service = self._prepare_service("663366")
-        service.stops[1].servicenumber = 663366
-
-        config = self.config['schedule_store']
-        r = redis.Redis(host=config['host'], port=config['port'], db=config['database'])
-
-        self.store.store_services([service], self.store.TYPE_SCHEDULED)
-
-        # Remove one key from redis:
-        r.hdel("schedule:scheduled:%s:663366:stops:ut" % self.service_date_str, "stop_name")
-
-        # We now expect a KeyError
-        with self.assertRaises(KeyError):
-            self.store.get_service_details(self.service_date_str, 663366, self.store.TYPE_SCHEDULED)
-
-        # We expect graceful handling from get_services_between():
-        self.assertEqual(0, len(self.store.get_services_between(service.stops[0].departure_time, service.stops[2].arrival_time)))
-
-        # Delete service:
-        self.assertTrue(self.store.delete_service(self.service_date_str, 663366, self.store.TYPE_SCHEDULED))
-
     def test_delete_multi(self):
         # Prepare service with two service numbers: 555 and 666
         service = self._prepare_service("555")

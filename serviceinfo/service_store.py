@@ -92,21 +92,13 @@ class ServiceStore(object):
                         'last_arrival': last_arrival
                        }
 
-        self.redis.hmset('%s:info' % key_prefix, service_data)
-
-        # Remove existing stops
-        self.redis.delete('%s:stops' % key_prefix)
-
-        # Add stops:
+        stops_data = []
         for stop in service.stops:
             # Do not add services which do not stop at a station:
             if stop.arrival_time is None and stop.departure_time is None:
                 continue
 
-            # Add service and metadata
-            self.redis.rpush('%s:stops' % key_prefix, stop.stop_code.lower())
-
-            # Add the following data:
+            # Construct a dict of each stop:
             stop_data = {'arrival_time': util.datetime_to_iso(stop.arrival_time),
                          'departure_time': util.datetime_to_iso(stop.departure_time),
                          'scheduled_arrival_platform': stop.scheduled_arrival_platform,
@@ -116,21 +108,19 @@ class ServiceStore(object):
                          'arrival_delay': stop.arrival_delay,
                          'departure_delay': stop.departure_delay,
                          'stop_name': stop.stop_name,
+                         'stop_code': stop.stop_code.lower(),
                          'cancelled_arrival': stop.cancelled_arrival,
                          'cancelled_departure': stop.cancelled_departure,
                          'servicenumber': stop.servicenumber,
-                         'attributes': json.dumps(stop.get_attribute_dicts()),
+                         'attributes': stop.get_attribute_dicts(),
                          }
 
-            # Translate None to empty strings:
-            for key, value in stop_data.iteritems():
-                if value == None:
-                    stop_data[key] = ''
+            stops_data.append(stop_data)
 
-            # Add stop to Redis:
-            self.redis.hmset('%s:stops:%s' % (key_prefix,
-                stop.stop_code.lower()), stop_data)
+        # Add stops data to service_data in JSON format:
+        service_data['stops'] = json.dumps(stops_data)
 
+        self.redis.hmset('%s:info' % key_prefix, service_data)
         return
 
 
@@ -286,18 +276,13 @@ class ServiceStore(object):
         service.servicenumber = service_data['servicenumber']
 
         # Get stops:
-        stops = self.redis.lrange('%s:stops' % key_prefix, 0, -1)
+        stops = json.loads(service_data['stops'])
 
         for stop in stops:
-            service_stop = ServiceStop(stop)
+            service_stop = ServiceStop(stop['stop_code'])
 
             # Get all data for this stop:
-            data = self.redis.hgetall('%s:stops:%s' % (key_prefix, stop))
-
-            # Convert empty strings to None:
-            for key, value in data.iteritems():
-                if value == '':
-                    data[key] = None
+            data = stop
 
             service_stop.stop_name = data['stop_name']
             service_stop.arrival_time = data['arrival_time']
@@ -309,13 +294,10 @@ class ServiceStore(object):
             service_stop.actual_departure_platform = data['actual_departure_platform']
             service_stop.arrival_delay = util.parse_str_int(data['arrival_delay'])
             service_stop.departure_delay = util.parse_str_int(data['departure_delay'])
-            service_stop.cancelled_arrival = (data['cancelled_arrival'] == 'True')
-            service_stop.cancelled_departure = (data['cancelled_departure'] == 'True')
+            service_stop.cancelled_arrival = data['cancelled_arrival']
+            service_stop.cancelled_departure = data['cancelled_departure']
             service_stop.servicenumber = data['servicenumber']
-
-            if 'attributes' in data:
-                attributes = json.loads(data['attributes'])
-                service_stop.set_attribute_dicts(attributes)
+            service_stop.set_attribute_dicts(data['attributes'])
 
             service.stops.append(service_stop)
 
@@ -368,12 +350,7 @@ class ServiceStore(object):
                 last_arrival = isodate.parse_datetime(metadata['last_arrival'])
 
                 if (first_departure >= from_time and first_departure <= to_time) or (last_arrival >= from_time and last_arrival <= to_time):
-                    try:
-                        services.append(self.get_service_details(service_date_str, service_id, service_type))
-                    except KeyError as exception:
-                        self.logger.warn("Could not retrieve full data for service %s:%s:%s: key error for %s",
-                                         service_type, service_date_str, service_id, exception)
-
+                    services.append(self.get_service_details(service_date_str, service_id, service_type))
 
         return services
 
@@ -398,13 +375,8 @@ class ServiceStore(object):
             servicedate, servicenumber))
 
         # Retrieve a single service element to retrieve some metadata:
-        try:
-            service = self.get_service_details(servicedate,
-                list(service_ids)[0], store_type)
-        except KeyError as exception:
-            self.logger.warn("Service %s:%s:%s not retrievable while deleting: key error for %s",
-                             store_type, servicedate, servicenumber, exception)
-            service = None
+        service = self.get_service_details(servicedate,
+            list(service_ids)[0], store_type)
 
         # Iterate over service ID's, delete them one by one:
         for service_id in service_ids:
@@ -444,15 +416,6 @@ class ServiceStore(object):
         key_prefix = 'schedule:%s:%s:%s' %(store_type,
             servicedate, service_id)
 
-        # Get stops:
-        stops = self.redis.lrange('%s:stops' % key_prefix, 0, -1)
-
-        for stop in stops:
-            # Delete stop information:
-            self.redis.delete('%s:stops:%s' % (key_prefix, stop))
-
-        # Delete other information for this service:
-        self.redis.delete('%s:stops' % key_prefix)
         self.redis.delete('%s:info' % key_prefix)
 
         self.redis.srem('schedule:%s:%s' % (store_type,
