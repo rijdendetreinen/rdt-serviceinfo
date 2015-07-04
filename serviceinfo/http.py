@@ -20,14 +20,13 @@ def get_services(servicedate):
     """
 
     # Prepare the store and store_type:
-    store, store_type = __prepare_lookup()
+    store, store_type = _prepare_lookup()
     services = store.get_service_numbers(servicedate, store_type)
 
     # Send list:
-    return __send_servicenumbers_list(services)
+    return _send_servicenumbers_list(services)
 
-
-def __prepare_lookup():
+def _prepare_lookup():
     """
     Prepare a lookup request: initialize a service store object,
     determine the store type and return them both as a tuple.
@@ -51,8 +50,7 @@ def __prepare_lookup():
     # Return service store and store_type as a tuple
     return (store, store_type)
 
-
-def __send_servicenumbers_list(services):
+def _send_servicenumbers_list(services):
     """
     Send a list of services, sort list when requested.
 
@@ -70,21 +68,19 @@ def __send_servicenumbers_list(services):
     # Return dict with list of services:
     return {'services': services}
 
-
 @bottle.route('/service/<servicedate>/<service_number>')
 def get_service_details(servicedate, service_number):
     """
     Main method to retrieve information about a service.
     """
 
-    store = service_store.ServiceStore(common.configuration['schedule_store'])
-    services = store.get_service(servicedate, service_number)
+    store, store_type = _prepare_lookup()
+    services = store.get_service(servicedate, service_number, store_type)
 
     if services == None:
         abort(404, "Service not found")
     else:
         return services_to_dict(services)
-
 
 @error(404)
 def error404(error_object):
@@ -94,7 +90,6 @@ def error404(error_object):
 
     response.content_type = 'application/json'
     return json.dumps({'error': '404', 'message': error_object.body})
-
 
 def services_to_dict(services):
     """
@@ -123,7 +118,6 @@ def services_to_dict(services):
         data['services'].append(service_data)
 
     return data
-
 
 def service_stops_to_dict(stops):
     """
