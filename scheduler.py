@@ -51,7 +51,7 @@ def get_current_servicedate(date='TODAY'):
             service_date = None
         
         if service_date != None:
-            logger.warning('Custom service date used (%s)',
+            logger.info('Custom service date used (%s)',
                 service_date.strftime('%Y-%m-%d'))
 
     return service_date
