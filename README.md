@@ -1,6 +1,7 @@
 RDT Serviceinfo
 ===============
 
+[![GitHub release](https://img.shields.io/github/release/geertw/rdt-serviceinfo.svg)](https://github.com/geertw/rdt-serviceinfo/releases)
 [![Build Status](https://travis-ci.org/geertw/rdt-serviceinfo.svg?branch=master)](https://travis-ci.org/geertw/rdt-serviceinfo)
 [![Coverage Status](https://coveralls.io/repos/geertw/rdt-serviceinfo/badge.svg?branch=master)](https://coveralls.io/r/geertw/rdt-serviceinfo?branch=master)
 [![Code Climate](https://codeclimate.com/github/geertw/rdt-serviceinfo/badges/gpa.svg)](https://codeclimate.com/github/geertw/rdt-serviceinfo)
@@ -23,8 +24,12 @@ additional information about train services, and more.
 Status
 ------
 
-Currently, RDT Serviceinfo is under development. A stable release is not available yet,
-but feel free to try it out.
+RDT Serviceinfo is used by [Rijden de Treinen.nl](http://www.rijdendetreinen.nl/) to supplement
+real-time departure information with additional information. It is being used by thousands of
+travellers each day and running in production since July 2015.
+
+The current release of RDT Serviceinfo is stable. Planned improvements include eliminating the
+need for a MySQL server (instead solely relying on Redis) and a rewrite of the IFF importer.
 
 Installation
 ------------
