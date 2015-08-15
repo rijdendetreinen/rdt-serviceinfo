@@ -261,7 +261,7 @@ class IffSource(object):
 
         Returns:
             string: Transport mode description (e.g. 'Intercity'),
-            or None when the station code is not found
+            or None when the transport mode code is not found
         """
 
         cursor = self.connection.cursor()
@@ -284,7 +284,7 @@ class IffSource(object):
 
         Returns:
             string: Company name (e.g. 'NS International'),
-            or None when the station code is not found
+            or None when the company code is not found
         """
         if company_code == None:
             return None
