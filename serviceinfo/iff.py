@@ -34,7 +34,7 @@ class IffSource(object):
         # Connect to MySQL
         self.connection = MySQLdb.connect(host=config['host'],
             user=config['user'], passwd=config['password'],
-            db=config['database'])
+            db=config['database'], charset='utf8')
 
         self.connection.ping(True)
 
