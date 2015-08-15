@@ -107,7 +107,7 @@ def parse_timetables(delivery):
             current_record['stop'].append({'station': s_stationshort, 'index': s_index, 'arrivaltime': both, 'departuretime': both})
         elif x[0] == ';':
             s_index += 1
-            s_stationshort = x[1:].split(',')
+            s_stationshort = x[1:]
             s_stationshort = s_stationshort.strip()
             current_record['stop'].append({'station': s_stationshort, 'index': s_index, 'arrivaltime': '\N', 'departuretime': '\N'})
         elif x[0] == '+':
