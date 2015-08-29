@@ -49,7 +49,7 @@ def parse_str_int(string):
         return int(string)
 
 
-def parse_sql_time(date, time, timezone=None):
+def parse_sql_time(date, time, tz=None):
     """
     Parse a time returned by MySQLdb and combine the returned
     timedelta object with a given date.
@@ -57,14 +57,13 @@ def parse_sql_time(date, time, timezone=None):
     Returns None when time is None.
     """
 
-    if time == None:
+    if time is None:
         return time
     else:
-        date = datetime.datetime.combine(date,
-            datetime.datetime.min.time()) + time
+        date = datetime.datetime.combine(date, datetime.datetime.min.time()) + time
 
-        if timezone != None:
-            date = timezone.localize(date)
+        if tz is not None:
+            date = tz.localize(date)
         return date
 
 
@@ -74,7 +73,7 @@ def datetime_to_iso(date_time):
     Returns None when date_time is None.
     """
 
-    if date_time == None:
+    if date_time is None:
         return None
     else:
         return date_time.isoformat()
