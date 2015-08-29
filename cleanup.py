@@ -43,11 +43,11 @@ def cleanup_datastore(treshold, store_type):
     dates = sorted(store.get_service_dates())
 
     treshold_date = date.today() - timedelta(days=treshold)
-    logger.debug("Treshold date: %s" % treshold_date)
+    logger.debug("Removing data until and including %s" % treshold_date)
 
     for service_date in dates:
         date_parsed = isodate.parse_date(service_date)
-        if date_parsed >= treshold_date:
+        if date_parsed > treshold_date:
             logger.info("Keeping data for %s", service_date)
             continue
 
