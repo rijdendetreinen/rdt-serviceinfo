@@ -345,6 +345,10 @@ class ServiceStore(object):
                 service_id = metadata_pair[0]
                 metadata = metadata_pair[1]
 
+                if metadata is None:
+                    logging.error("No metadata for service %s", service_id)
+                    continue
+
                 # Check whether service runs between from_time and to_time:
                 first_departure = isodate.parse_datetime(metadata['first_departure'])
                 last_arrival = isodate.parse_datetime(metadata['last_arrival'])

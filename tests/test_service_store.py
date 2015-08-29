@@ -5,8 +5,6 @@ import serviceinfo.data as data
 import serviceinfo.iff as iff
 import serviceinfo.service_store as service_store
 
-import redis
-
 import unittest
 
 
@@ -219,6 +217,15 @@ class ServiceStoreTests(unittest.TestCase):
 
         services = self.store.get_services_between(time2, time1)
         self.assertEquals(len(services), 0)
+
+        # Test edge case where metadata is not available:
+        metadata_key = "schedule:scheduled:%s:%s:info" % (self.service_date_str, service.service_id)
+        delete_result = self.store.redis.delete(metadata_key)
+        self.assertTrue(delete_result, "Could not delete key %s which is required for a full test" % metadata_key)
+
+        # Test whether missing metadata is handled appropiately:
+        services = self.store.get_services_between(time1, time2)
+        self.assertEquals(len(services), 0, "Would not expect service to be returned")
 
         # Delete service:
         self.store.delete_service(self.service_date_str, "11155", self.store.TYPE_SCHEDULED)
