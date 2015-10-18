@@ -18,6 +18,8 @@ addons:
     - python-redis
     - python-tz
     - python-zmq
+    - python-yaml
+    - python-mysqldb
 virtualenv:
   system_site_packages: true
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
