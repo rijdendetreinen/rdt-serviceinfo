@@ -15,16 +15,18 @@ addons:
     - python-argparse
     - python-lxml
     - python-mysqldb
-    - python-redis
-    - python-tz
     - python-zmq
     - python-yaml
     - python-mysqldb
+#    - python-redis
+#    - python-tz
 virtualenv:
   system_site_packages: true
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
   #- "pip install -r requirements.txt"
+  - pip install redis
+  - pip install pytz
   - pip install isodate
   - pip install bottle
   - pip install coveralls
