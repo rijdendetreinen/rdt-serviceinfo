@@ -1,18 +1,32 @@
 language: python
 python:
   - "2.7"
+sudo: false
 services:
   - redis-server
-before_install:
-  # See: https://github.com/travis-ci/travis-ci/issues/3106
-  - sudo apt-get remove libzmq3
-  - sudo rm /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
-  - sudo apt-get install -qq python-argparse python-lxml python-mysqldb python-redis python-tz python-zmq
+addons:
+  apt:
+    packages:
+    - python-argparse
+    - python-lxml
+    - python-mysqldb
+    - python-yaml
+   # These packages are not whitelisted (yet) by Travis:
+   # - python-redis
+   # - python-tz
+   # These packages do not work correctly in the Travis CI Docker VMs:
+   # - python-zmq
+   # - python-mysqldb
 virtualenv:
   system_site_packages: true
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: 
-  #- "pip install -r requirements.txt"
+install:
+  # Install via pip because packages are not whitelisted:
+  - pip install redis
+  - pip install pytz
+  # Install via pip because these packages have problems in Travis CI Docker images:
+  - pip install pyzmq
+  - pip install MySQL-python
+  # Always install via pip:
   - pip install isodate
   - pip install bottle
   - pip install coveralls
