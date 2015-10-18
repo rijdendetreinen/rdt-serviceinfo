@@ -15,9 +15,9 @@ addons:
     - python-argparse
     - python-lxml
     - python-mysqldb
-    - python-zmq
+#    - python-zmq
     - python-yaml
-    - python-mysqldb
+#    - python-mysqldb
 #    - python-redis
 #    - python-tz
 virtualenv:
@@ -25,6 +25,8 @@ virtualenv:
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
   #- "pip install -r requirements.txt"
+  - pip install pyzmq
+  - pip install MySQL-python
   - pip install redis
   - pip install pytz
   - pip install isodate
