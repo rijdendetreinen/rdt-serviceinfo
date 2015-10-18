@@ -1,13 +1,23 @@
 language: python
 python:
   - "2.7"
+sudo: false
 services:
   - redis-server
-before_install:
-  # See: https://github.com/travis-ci/travis-ci/issues/3106
-  - sudo apt-get remove libzmq3
-  - sudo rm /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
-  - sudo apt-get install -qq python-argparse python-lxml python-mysqldb python-redis python-tz python-zmq
+#before_install:
+#  # See: https://github.com/travis-ci/travis-ci/issues/3106
+#  - sudo apt-get remove libzmq3
+#  - sudo rm /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
+#  - sudo apt-get install -qq python-argparse python-lxml python-mysqldb python-redis python-tz python-zmq
+addons:
+  apt:
+    packages:
+    - python-argparse
+    - python-lxml
+    - python-mysqldb
+    - python-redis
+    - python-tz
+    - python-zmq
 virtualenv:
   system_site_packages: true
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
