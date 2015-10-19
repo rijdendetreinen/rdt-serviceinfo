@@ -336,25 +336,27 @@ class ServiceStore(object):
         services = []
 
         for service_number in service_numbers:
-            # Check metadate: first_departure and last_arrival between
+            # Check metadata: first_departure and last_arrival between
             # given time constraints
             service_metadata = self.get_service_metadata(service_date, service_number)
-            service_type = service_metadata[0]
 
-            for metadata_pair in service_metadata[1]:
-                service_id = metadata_pair[0]
-                metadata = metadata_pair[1]
+            if service_metadata is not None:
+                service_type = service_metadata[0]
 
-                if metadata is None:
-                    logging.error("No metadata for service %s", service_id)
-                    continue
+                for metadata_pair in service_metadata[1]:
+                    service_id = metadata_pair[0]
+                    metadata = metadata_pair[1]
 
-                # Check whether service runs between from_time and to_time:
-                first_departure = isodate.parse_datetime(metadata['first_departure'])
-                last_arrival = isodate.parse_datetime(metadata['last_arrival'])
+                    if metadata is None:
+                        logging.error("No metadata for service %s", service_id)
+                        continue
 
-                if (first_departure >= from_time and first_departure <= to_time) or (last_arrival >= from_time and last_arrival <= to_time):
-                    services.append(self.get_service_details(service_date_str, service_id, service_type))
+                    # Check whether service runs between from_time and to_time:
+                    first_departure = isodate.parse_datetime(metadata['first_departure'])
+                    last_arrival = isodate.parse_datetime(metadata['last_arrival'])
+
+                    if (first_departure >= from_time and first_departure <= to_time) or (last_arrival >= from_time and last_arrival <= to_time):
+                        services.append(self.get_service_details(service_date_str, service_id, service_type))
 
         return services
 

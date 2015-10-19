@@ -223,7 +223,7 @@ class ServiceStoreTests(unittest.TestCase):
         delete_result = self.store.redis.delete(metadata_key)
         self.assertTrue(delete_result, "Could not delete key %s which is required for a full test" % metadata_key)
 
-        # Test whether missing metadata is handled appropiately:
+        # Test whether missing metadata is handled appropriately:
         services = self.store.get_services_between(time1, time2)
         self.assertEquals(len(services), 0, "Would not expect service to be returned")
 
