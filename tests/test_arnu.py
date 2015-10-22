@@ -22,34 +22,35 @@ class ArnuTests(unittest.TestCase):
         except OperationalError as e:
             self.fail("Could not connect to IFF database: %s" % e)
 
-
     def test_parse_gibberish(self):
         message = "If debugging is the process of removing software bugs, then programming must be the process of putting them in."
         services = arnu.parse_arnu_message(message, self.iff)
         self.assertIsNone(services, "Non-parsable ARNU message should return None")
 
-
     def test_parse_diverted(self):
-        with open("tests/testdata/diverted.xml", "r") as content_file:
-            message = content_file.read()
+        testsets = [("tests/testdata/diverted.xml", "ekz", {'zdk', 'pmw', 'pmr', 'pmo'}),
+                    ("tests/testdata/diverted2.xml", "lw", {'dvd', 'asdz'})]
 
-        services = arnu.parse_arnu_message(message, self.iff)
-        self.assertEqual(len(services), 1, "diverted.xml should return 1 service")
-        self.assertEqual(services[0].get_destination_str(), "ekz", "Destination should be 'ekz'")
+        for testset in testsets:
+            with open(testset[0], "r") as content_file:
+                message = content_file.read()
 
-        # Check whether stops zdk, pmw, mr, pmo are diverted:
-        must_be_cancelled = { 'zdk', 'pmw', 'pmr', 'pmo' }
-        for stop in services[0].stops:
-            if stop.stop_code in must_be_cancelled:
-                self.assertTrue(stop.cancelled_arrival, 'Stop %s should have a cancelled arrival' % stop.stop_code)
-            else:
-                self.assertFalse(stop.cancelled_arrival, 'Stop %s should not have a cancelled arrival' % stop.stop_code)
+            services = arnu.parse_arnu_message(message, self.iff)
+            self.assertEqual(len(services), 1, "%s should return 1 service" % testset[0])
+            self.assertEqual(services[0].get_destination_str(), testset[1], "Destination should be '%s' instead of '%s'" % (testset[0], services[0].get_destination_str()))
 
-            if stop.stop_code in must_be_cancelled:
-                self.assertTrue(stop.cancelled_departure, 'Stop %s should have a cancelled departure' % stop.stop_code)
-            else:
-                self.assertFalse(stop.cancelled_departure, 'Stop %s should not have a cancelled departure' % stop.stop_code)
+            # Check whether stops zdk, pmw, mr, pmo are diverted:
+            must_be_cancelled = testset[2]
+            for stop in services[0].stops:
+                if stop.stop_code in must_be_cancelled:
+                    self.assertTrue(stop.cancelled_arrival, 'Stop %s should have a cancelled arrival' % stop.stop_code)
+                else:
+                    self.assertFalse(stop.cancelled_arrival, 'Stop %s should not have a cancelled arrival' % stop.stop_code)
 
+                if stop.stop_code in must_be_cancelled:
+                    self.assertTrue(stop.cancelled_departure, 'Stop %s should have a cancelled departure' % stop.stop_code)
+                else:
+                    self.assertFalse(stop.cancelled_departure, 'Stop %s should not have a cancelled departure' % stop.stop_code)
 
     def test_parse_fully_cancelled(self):
         with open("tests/testdata/cancelled-fully.xml", "r") as content_file:

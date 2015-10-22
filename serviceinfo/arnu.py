@@ -141,10 +141,6 @@ def _parse_stops(arnu_stops, iff):
         stop.stop_name = iff.get_station_name(stopcode)
         stop.servicenumber = servicenumber
 
-        # Do not parse stops which are not intended for passengers (no arrival time AND no departure time):
-        if stop.arrival_time is None and stop.departure_time is None:
-            continue
-
         if 'StopType' in stop_info.attrib:
             # Check whether this stop is not cancelled:
             if stop_info.attrib['StopType'] == 'Cancelled-Stop':
@@ -167,6 +163,10 @@ def _parse_stops(arnu_stops, iff):
             previous_stop_cancelled = True
         else:
             previous_stop_cancelled = False
+
+        # Do not parse stops which are not intended for passengers (no arrival time AND no departure time):
+        if stop.arrival_time is None and stop.departure_time is None:
+            continue
 
         stops.append(stop)
 
