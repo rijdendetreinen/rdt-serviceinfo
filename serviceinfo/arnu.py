@@ -34,8 +34,8 @@ def parse_arnu_message(message, iff):
         return None
 
     # Search ServiceInfoList/ServiceInfo nodes (containing all ARNU services):
-    service_info_lijst = root.find('ServiceInfoList')
-    service_info_items = service_info_lijst.findall('ServiceInfo')
+    service_info_list = root.find('ServiceInfoList')
+    service_info_items = service_info_list.findall('ServiceInfo')
 
     services = []
     parsed_service_ids = []
@@ -51,7 +51,6 @@ def parse_arnu_message(message, iff):
             parsed_service_ids.append(parsed_service.service_id)
 
     return services
-
 
 def _parse_arnu_service(service_info, iff, parsed_service_ids):
     """
@@ -170,4 +169,4 @@ def _parse_stops(arnu_stops, iff):
 
         stops.append(stop)
 
-    return (stops, service_date, servicenumbers)
+    return stops, service_date, servicenumbers

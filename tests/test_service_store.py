@@ -262,7 +262,7 @@ class ServiceStoreTests(unittest.TestCase):
     def test_delete_nonexisting(self):
         # Assure that this service id does not exist:
         non_existing_id = 123456
-        if self.store.get_service(self.service_date_str, non_existing_id, self.store.TYPE_SCHEDULED) != None:
+        if self.store.get_service(self.service_date_str, non_existing_id, self.store.TYPE_SCHEDULED) is not None:
             self.skipTest("Service %s exists in the service store" % non_existing_id)
 
         # Delete service:
@@ -340,7 +340,6 @@ class ServiceStoreTests(unittest.TestCase):
         self.assertEqual(len(retrieved_services), 1)
         self._assert_service_equal(retrieved_services[0], scheduled_service)
 
-
         # Store the same service, but now actual:
         scheduled_service = self._prepare_service("4567")
         scheduled_service.service_id = "unittest-actual"
@@ -356,7 +355,7 @@ class ServiceStoreTests(unittest.TestCase):
         self.store.delete_service(self.service_date_str, "4567", self.store.TYPE_ACTUAL)
 
     def test_dont_store_empty_stop(self):
-        # Test whether a stop withouth departure and arrival time is not stored
+        # Test whether a stop without departure and arrival time is not stored
 
         service = self._prepare_service("1234")
         service.stops[1].arrival_time = None

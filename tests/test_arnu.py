@@ -66,7 +66,6 @@ class ArnuTests(unittest.TestCase):
                 self.assertTrue(stop.cancelled_arrival, 'Stop %s should have a cancelled arrival' % stop.stop_code)
             self.assertTrue(stop.cancelled_departure, 'Stop %s should have a cancelled departure' % stop.stop_code)
 
-
     def test_parse_partly_cancelled(self):
         with open("tests/testdata/cancelled-partly.xml", "r") as content_file:
             message1 = content_file.read()
@@ -118,7 +117,6 @@ class ArnuTests(unittest.TestCase):
                     self.assertFalse(stop.cancelled_departure, 'Service %s - stop %s should not have a cancelled departure' % (service.servicenumber, stop.stop_code))
                     prev_departure_cancelled = False
 
-
     def test_parse_multiple_service_ids(self):
         with open("tests/testdata/multiple-serviceids.xml", "r") as content_file:
             message = content_file.read()
@@ -139,7 +137,6 @@ class ArnuTests(unittest.TestCase):
             else:
                 match_servicenumber = "4484"
                 self.assertEqual(stop.servicenumber, match_servicenumber, "Service number should be %s" % match_servicenumber)
-
 
     def test_parse_multiple_wings(self):
         with open("tests/testdata/multiple-wings.xml", "r") as content_file:
@@ -168,7 +165,6 @@ class ArnuTests(unittest.TestCase):
 
         for index, stop in enumerate(services[2].stops):
             self.assertEqual(stop.servicenumber, "1750", "Service number should be 1750")
-
 
 
 if __name__ == '__main__':
