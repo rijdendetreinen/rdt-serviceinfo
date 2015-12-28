@@ -231,6 +231,34 @@ class ServiceStoreTests(unittest.TestCase):
         self.store.delete_service(self.service_date_str, "11155", self.store.TYPE_SCHEDULED)
         self.assertIsNone(self.store.get_service(self.service_date_str, "11155"))
 
+    def test_get_services_between_bug(self):
+        service = self._prepare_service("11156")
+        time1 = service.stops[0].departure_time
+        time2 = service.stops[2].arrival_time
+
+        # Remove all stops except the first one to reproduce some invalid ARNU data
+        # (see https://github.com/geertw/rdt-serviceinfo/issues/17)
+        del service.stops[1:3]
+
+        self.store.store_services([service], self.store.TYPE_SCHEDULED)
+
+        # We would not expect that a service is returned:
+        services = self.store.get_services_between(time1, time2)
+        self.assertEquals(len(services), 0)
+
+        # We would also not expect that a service is returned when querying outside the service window:
+        services = self.store.get_services_between(time1 - datetime.timedelta(minutes=2),
+                                                   time1 - datetime.timedelta(minutes=1))
+        self.assertEquals(len(services), 0)
+
+        services = self.store.get_services_between(time2 + datetime.timedelta(minutes=1),
+                                                   time2 + datetime.timedelta(minutes=2))
+        self.assertEquals(len(services), 0)
+
+        # Delete service:
+        self.store.delete_service(self.service_date_str, "11156", self.store.TYPE_SCHEDULED)
+        self.assertIsNone(self.store.get_service(self.service_date_str, "11156"))
+
     def test_delete_nonexisting(self):
         # Assure that this service id does not exist:
         non_existing_id = 123456

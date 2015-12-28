@@ -352,11 +352,12 @@ class ServiceStore(object):
                         continue
 
                     # Check whether service runs between from_time and to_time:
-                    first_departure = isodate.parse_datetime(metadata['first_departure'])
-                    last_arrival = isodate.parse_datetime(metadata['last_arrival'])
+                    if metadata['first_departure'] != 'None' and metadata['last_arrival'] != 'None':
+                        first_departure = isodate.parse_datetime(metadata['first_departure'])
+                        last_arrival = isodate.parse_datetime(metadata['last_arrival'])
 
-                    if (first_departure >= from_time and first_departure <= to_time) or (last_arrival >= from_time and last_arrival <= to_time):
-                        services.append(self.get_service_details(service_date_str, service_id, service_type))
+                        if (first_departure >= from_time and first_departure <= to_time) or (last_arrival >= from_time and last_arrival <= to_time):
+                            services.append(self.get_service_details(service_date_str, service_id, service_type))
 
         return services
 
