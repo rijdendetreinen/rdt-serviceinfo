@@ -25,6 +25,7 @@ install:
   # Always install via pip:
   - pip install isodate
   - pip install bottle
+  - pip install codecov
   - pip install coveralls
   - pip install scrutinizer-ocular
 before_script:
@@ -33,6 +34,7 @@ before_script:
   - mysql -u travis rdt_iff_test < tests/testdata/iff-testset.sql
 script: coverage run --source serviceinfo -m py.test
 after_success:
+  - codecov
   - coveralls
   - ocular --data-file ".coverage"
 notifications:
