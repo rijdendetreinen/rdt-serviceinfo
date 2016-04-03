@@ -76,6 +76,26 @@ class ArchiveTests(unittest.TestCase):
         self.assertFalse(service_dict['cancelled'])
         self.assertFalse(service_dict['partly_cancelled'])
 
+    def test_process_service_data_fully_cancelled(self):
+        service = self._create_service_object()
+        service.cancelled = True
+
+        service_dict = self.archive._process_service_data(service)
+
+        # Verify dict contents
+        self.assertTrue(service_dict['cancelled'])
+
+    def test_process_service_data_partly_cancelled(self):
+        service = self._create_service_object()
+
+        service.stops[1].cancelled_departure = True
+        service.stops[2].cancelled_arrival = True
+
+        service_dict = self.archive._process_service_data(service)
+
+        # Verify dict contents
+        self.assertFalse(service_dict['cancelled'])
+        self.assertTrue(service_dict['partly_cancelled'])
 
 if __name__ == '__main__':
     unittest.main()
