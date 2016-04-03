@@ -79,6 +79,7 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual(service_dict['to'], 'kkd')
         self.assertFalse(service_dict['cancelled'])
         self.assertFalse(service_dict['partly_cancelled'])
+        self.assertEqual(service_dict['max_delay'], 0)
 
     def test_process_service_data_fully_cancelled(self):
         service = self._create_service_object()
@@ -100,6 +101,27 @@ class ArchiveTests(unittest.TestCase):
         # Verify dict contents
         self.assertFalse(service_dict['cancelled'])
         self.assertTrue(service_dict['partly_cancelled'])
+
+    def test_process_service_data_max_delay(self):
+        service = self._create_service_object()
+
+        service.stops[1].arrival_delay = 15
+        service.stops[2].arrival_delay = 10
+
+        service_dict = self.archive._process_service_data(service)
+
+        # Verify max delay is 15 mins:
+        self.assertEqual(service_dict['max_delay'], 15)
+
+        service.stops[1].departure_delay = 20
+        service_dict = self.archive._process_service_data(service)
+
+        self.assertEqual(service_dict['max_delay'], 20)
+
+        service.stops[2].departure_delay = 25
+        service_dict = self.archive._process_service_data(service)
+
+        self.assertEqual(service_dict['max_delay'], 25)
 
     def test_process_stop(self):
         stop = self._create_stop_object("rtd", "Rotterdam Centraal")
