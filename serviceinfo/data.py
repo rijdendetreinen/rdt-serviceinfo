@@ -40,6 +40,20 @@ class Service(object):
 
         return self.service_date.strftime('%Y-%m-%d')
 
+    def get_departure(self):
+        """
+        Retrieve the first stop for this service.
+        """
+
+        return self.stops[0]
+
+    def get_departure_str(self):
+        """
+        Retrieve the stop code of the first stop for this service.
+        """
+
+        return self.get_departure().stop_code
+
     def get_destination(self):
         """
         Retrieve the last stop for this service.
