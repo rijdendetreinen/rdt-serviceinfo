@@ -3,8 +3,13 @@ import serviceinfo.data as data
 import unittest
 import datetime
 
+
 class ServiceTest(unittest.TestCase):
-    def test_service_destination(self):
+    def _create_service(self):
+        """
+        Internal method to create a service object
+        :return: Service object
+        """
         service = data.Service()
         service.servicenumber = 1234
 
@@ -17,7 +22,20 @@ class ServiceTest(unittest.TestCase):
         service.stops.append(stop1)
         service.stops.append(stop2)
 
+        return (stop1, stop2, service)
+
+    def test_service_departure(self):
+        stop1, stop2, service = self._create_service()
+
+        self.assertEquals(service.get_departure(), stop1)
+        self.assertEquals(service.get_departure().stop_name, stop1.stop_name)
+        self.assertEquals(service.get_departure_str(), "ut")
+
+    def test_service_destination(self):
+        stop1, stop2, service = self._create_service()
+
         self.assertEquals(service.get_destination(), stop2)
+        self.assertEquals(service.get_destination().stop_name, stop2.stop_name)
         self.assertEquals(service.get_destination_str(), "asd")
 
     def test_service_servicedate(self):
