@@ -32,6 +32,8 @@ before_script:
   - cp tests/testdata/serviceinfo-unittest.travis.yaml config/serviceinfo-unittest.yaml
   - mysql -e 'create database rdt_iff_test;'
   - mysql -u travis rdt_iff_test < tests/testdata/iff-testset.sql
+  - mysql -e 'create database rdt_archive_test;'
+  - mysql -u travis rdt_archive_test < doc/create-tables-archive.sql
 script: coverage run --source serviceinfo -m py.test
 after_success:
   - codecov
