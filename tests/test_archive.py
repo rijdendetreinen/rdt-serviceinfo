@@ -112,10 +112,33 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual(stop_data["departure"], stop.departure_time)
         self.assertEqual(stop_data["arrival_delay"], stop.arrival_delay)
         self.assertEqual(stop_data["departure_delay"], stop.departure_delay)
-        self.assertEqual(stop_data["arrival_cancelled"], stop.cancelled_arrival)
-        self.assertEqual(stop_data["departure_cancelled"], stop.cancelled_departure)
+        self.assertFalse(stop_data["arrival_cancelled"])
+        self.assertFalse(stop_data["departure_cancelled"])
         self.assertEqual(stop_data["arrival_platform"], stop.actual_arrival_platform)
         self.assertEqual(stop_data["departure_platform"], stop.actual_departure_platform)
+
+    def test_process_stop_cancelled(self):
+        stop = self._create_stop_object("rtd", "Rotterdam Centraal")
+        stop.cancelled_departure = True
+        stop_data = self.archive._process_stop_data(9999, stop, 0)
+
+        self.assertFalse(stop_data["arrival_cancelled"])
+        self.assertTrue(stop_data["departure_cancelled"])
+
+        stop = self._create_stop_object("rtn", "Rotterdam Noord")
+        stop.cancelled_arrival = True
+        stop.cancelled_departure = True
+        stop_data = self.archive._process_stop_data(9999, stop, 1)
+
+        self.assertTrue(stop_data["arrival_cancelled"])
+        self.assertTrue(stop_data["departure_cancelled"])
+
+        stop = self._create_stop_object("rta", "Rotterdam Alexander")
+        stop.cancelled_arrival = True
+        stop_data = self.archive._process_stop_data(9999, stop, 2)
+
+        self.assertTrue(stop_data["arrival_cancelled"])
+        self.assertFalse(stop_data["departure_cancelled"])
 
 if __name__ == '__main__':
     unittest.main()
