@@ -28,6 +28,16 @@ class ArchiveTests(unittest.TestCase):
         except OperationalError as e:
             self.fail("Could not connect to archive database: %s" % e)
 
+    def _create_stop_object(self, stop_code, stop_name):
+        stop = data.ServiceStop(stop_code)
+        stop.stop_name = stop_name
+
+        stop.arrival_time = datetime.datetime.combine(self.service_date, datetime.datetime.min.time())
+        stop.departure_time = datetime.datetime.combine(self.service_date, datetime.datetime.max.time())
+        stop.servicenumber = 1234
+
+        return stop
+
     def _create_service_object(self):
         """
         Internal method to create a service object
@@ -42,17 +52,10 @@ class ArchiveTests(unittest.TestCase):
         service.service_date = self.service_date
         service.source = 'actual'
 
-        stop1 = data.ServiceStop("asd")
-        stop1.stop_name = "Amsterdam Centraal"
-
-        stop2 = data.ServiceStop("ut")
-        stop2.stop_name = "Utrecht Centraal"
-
-        stop3 = data.ServiceStop("ah")
-        stop3.stop_name = "Arnhem"
-
-        stop4 = data.ServiceStop("kkd")
-        stop4.stop_name = "Köln-Deutz"
+        stop1 = self._create_stop_object("asd", "Amsterdam Centraal")
+        stop2 = self._create_stop_object("ut", "Utrecht Centraal")
+        stop3 = self._create_stop_object("ah", "Arnhem")
+        stop4 = self._create_stop_object("kkd", "Köln-Deutz")
 
         service.stops.append(stop1)
         service.stops.append(stop2)
@@ -68,6 +71,7 @@ class ArchiveTests(unittest.TestCase):
 
         # Verify dict contents
         self.assertEqual(service_dict['service_number'], service.servicenumber)
+        self.assertEqual(service_dict['service_date'], '2015-04-01')
         self.assertEqual(service_dict['company'], service.company_code)
         self.assertEqual(service_dict['transmode'], service.transport_mode)
         self.assertEqual(service_dict['source'], service.source)
@@ -96,6 +100,22 @@ class ArchiveTests(unittest.TestCase):
         # Verify dict contents
         self.assertFalse(service_dict['cancelled'])
         self.assertTrue(service_dict['partly_cancelled'])
+
+    def test_process_stop(self):
+        stop = self._create_stop_object("rtd", "Rotterdam Centraal")
+        stop_data = self.archive._process_stop_data(9999, stop, 5)
+
+        self.assertEqual(stop_data["service_id"], 9999)
+        self.assertEqual(stop_data["stop"], stop.stop_code)
+        self.assertEqual(stop_data["stop_nr"], 5)
+        self.assertEqual(stop_data["arrival"], stop.arrival_time)
+        self.assertEqual(stop_data["departure"], stop.departure_time)
+        self.assertEqual(stop_data["arrival_delay"], stop.arrival_delay)
+        self.assertEqual(stop_data["departure_delay"], stop.departure_delay)
+        self.assertEqual(stop_data["arrival_cancelled"], stop.cancelled_arrival)
+        self.assertEqual(stop_data["departure_cancelled"], stop.cancelled_departure)
+        self.assertEqual(stop_data["arrival_platform"], stop.actual_arrival_platform)
+        self.assertEqual(stop_data["departure_platform"], stop.actual_departure_platform)
 
 if __name__ == '__main__':
     unittest.main()
