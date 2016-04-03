@@ -78,6 +78,29 @@ class Archive(object):
                   (%(service_date)s, %(service_number)s, %(company)s, %(transmode)s, %(cancelled)s,
                   %(partly_cancelled)s, %(max_delay)s, %(from)s, %(to)s, %(source)s)""", service_data)
 
+            service_id = cursor.lastrowid
+
+            # Store stops:
+            self._store_stops(service_id, service, cursor)
+
+    def _store_stops(self, service_id, service, cursor):
+        stop_nr = 0
+        for stop in service.stops:
+            stop_data = self._process_stop_data(service_id, stop, stop_nr)
+
+            cursor.execute("""
+                INSERT INTO stops
+                  (service_id, stop_nr, `stop`, service_number, arrival, arrival_delay, arrival_cancelled,
+                  arrival_platform, arrival_platform_scheduled, departure, departure_delay, departure_cancelled,
+                  departure_platform, departure_platform_scheduled)
+                VALUES
+                  (%(service_id)s, %(stop_nr)s, %(stop)s, %(service_number)s, %(arrival)s, %(arrival_delay)s,
+                  %(arrival_cancelled)s, %(arrival_platform)s, %(arrival_platform_scheduled)s, %(departure)s,
+                  %(departure_delay)s, %(departure_cancelled)s, %(departure_platform)s,
+                  %(departure_platform_scheduled)s)""", stop_data)
+
+            stop_nr += 1
+
     def _process_service_data(self, service):
         """
         Prepare a dictionary object to be used when storing the service to the database
@@ -96,7 +119,6 @@ class Archive(object):
             if stop.departure_delay > max_delay:
                 max_delay = stop.departure_delay
 
-        # Store service:
         service_data = {
             "service_date": service.get_servicedate_str(),
             "service_number": service.servicenumber,
@@ -111,3 +133,29 @@ class Archive(object):
         }
 
         return service_data
+
+    def _process_stop_data(self, service_id, stop, stop_nr):
+        """
+        Prepare a dictionary object to be used when storing the stop to the database
+        :param service_id: ID of the service (in the database)
+        :param stop: ServiceStop object
+        :return: Dictionary containing all data to be stored in the archive
+        """
+        stop_data = {
+            "service_id": service_id,
+            "stop_nr": stop_nr,
+            "stop": stop.stop_code,
+            "service_number": stop.servicenumber,
+            "arrival": stop.arrival_time,
+            "arrival_delay": stop.arrival_delay,
+            "arrival_cancelled": stop.cancelled_arrival,
+            "arrival_platform": stop.actual_arrival_platform,
+            "arrival_platform_scheduled": stop.scheduled_arrival_platform,
+            "departure": stop.departure_time,
+            "departure_delay": stop.departure_delay,
+            "departure_cancelled": stop.cancelled_departure,
+            "departure_platform": stop.actual_departure_platform,
+            "departure_platform_scheduled": stop.scheduled_departure_platform
+        }
+
+        return stop_data

@@ -20,7 +20,7 @@ CREATE TABLE `stops` (
   `service_id` int(10) unsigned NOT NULL,
   `stop_nr` tinyint(3) unsigned NOT NULL,
   `stop` varchar(6) NOT NULL,
-  `servicenumber` varchar(12) NOT NULL,
+  `service_number` varchar(12) NOT NULL,
   `arrival` datetime DEFAULT NULL,
   `departure` datetime DEFAULT NULL,
   `arrival_delay` smallint(6) NOT NULL,
