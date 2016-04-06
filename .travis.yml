@@ -1,6 +1,9 @@
 language: python
 python:
   - "2.7"
+cache: pip
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
 sudo: false
 services:
   - redis-server
@@ -20,8 +23,8 @@ virtualenv:
   system_site_packages: true
 install:
   # Install via pip because these packages have problems in Travis CI Docker images:
-  - pip install pyzmq
-  - pip install MySQL-python
+  - pip install pyzmq --install-option="--zmq=bundled"
+  #- pip install MySQL-python
   # Always install via pip:
   - pip install isodate
   - pip install bottle
@@ -32,6 +35,8 @@ before_script:
   - cp tests/testdata/serviceinfo-unittest.travis.yaml config/serviceinfo-unittest.yaml
   - mysql -e 'create database rdt_iff_test;'
   - mysql -u travis rdt_iff_test < tests/testdata/iff-testset.sql
+  - mysql -e 'create database rdt_archive_test;'
+  - mysql -u travis rdt_archive_test < doc/create-tables-archive.sql
 script: coverage run --source serviceinfo -m py.test
 after_success:
   - codecov

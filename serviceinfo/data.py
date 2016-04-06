@@ -40,6 +40,20 @@ class Service(object):
 
         return self.service_date.strftime('%Y-%m-%d')
 
+    def get_departure(self):
+        """
+        Retrieve the first stop for this service.
+        """
+
+        return self.stops[0]
+
+    def get_departure_str(self):
+        """
+        Retrieve the stop code of the first stop for this service.
+        """
+
+        return self.get_departure().stop_code
+
     def get_destination(self):
         """
         Retrieve the last stop for this service.
@@ -85,6 +99,17 @@ class ServiceStop(object):
 
     def __repr__(self):
         return "<ServiceStop @ %s>" % self.stop_code
+
+    def get_arrival_platform(self):
+        """
+        Return the arrival platform. Uses the actual platform if set, returns
+        the scheduled arrival platform otherwise.
+        """
+
+        if self.actual_arrival_platform is not None:
+            return self.actual_arrival_platform
+        else:
+            return self.scheduled_arrival_platform
 
     def get_departure_platform(self):
         """

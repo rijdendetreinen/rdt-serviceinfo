@@ -8,6 +8,11 @@ schedule_store:
     host: localhost
     port: 6379
     database: 0
+archive_database:
+    host: localhost
+    user: travis
+    password: ""
+    database: rdt_archive_test
 arnu_source:
     socket: tcp://127.0.0.1:12345
 logging:
