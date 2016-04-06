@@ -36,11 +36,9 @@ class HttpTest(unittest.TestCase):
 
         self.store.store_services(self.test_services, self.store.TYPE_SCHEDULED)
 
-
     def tearDown(self):
         for service in self.test_services:
             self.store.delete_service(self.service_date_str, service.servicenumber, self.store.TYPE_SCHEDULED)
-
 
     def _prepare_service(self, number):
         """
@@ -77,7 +75,6 @@ class HttpTest(unittest.TestCase):
 
         return service
 
-
     def test_get_services(self):
         http_services = http.get_services(servicedate="2015-04-01")
 
@@ -86,7 +83,6 @@ class HttpTest(unittest.TestCase):
 
         for service in self.test_services:
             self.assertTrue(str(service.servicenumber) in http_services["services"])
-
 
     def test_get_services_sorted(self):
         bottle.request.query.sort = 'true'
@@ -102,7 +98,6 @@ class HttpTest(unittest.TestCase):
         for service in self.test_services:
             self.assertTrue(str(service.servicenumber) in http_services["services"])
 
-
     def test_get_services_store(self):
         bottle.request.query.type = 'actual'
         actual_http_services = http.get_services(servicedate="2015-04-01")
@@ -116,13 +111,17 @@ class HttpTest(unittest.TestCase):
         self.assertTrue("services" in scheduled_http_services)
         self.assertEqual(len(scheduled_http_services['services']), len(self.test_services))
 
-
     def test_service_details_404(self):
         with self.assertRaises(HTTPError) as cm:
             http.get_service_details(servicedate="2015-04-01", service_number="4444")
 
         self.assertEqual(cm.exception.status, "404 Not Found")
 
+    def test_error404(self):
+        error = HTTPError(status=404, body="We have a problem")
+        response = http.error404(error)
+        expected = '{"message": "We have a problem", "error": "404"}'
+        self.assertEqual(response, expected)
 
     def test_service_details(self):
         for service in self.test_services[0:5]:
