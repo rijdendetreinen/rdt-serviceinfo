@@ -107,10 +107,17 @@ class IffDatabaseTests(unittest.TestCase):
 
     def test_bus_service(self):
         services = self.iff.get_service_details(3, self.service_date)
-        self.assertEquals(len(services), 1, "get_service_details() should return only one service for ID 1")
+        self.assertEquals(len(services), 1, "get_service_details() should return only one service for ID 3")
 
         # Check servicenumber, should be 'i3'
         self.assertEquals(services[0].servicenumber, 'i3')
+
+    def test_variant_service(self):
+        services = self.iff.get_service_details(5, self.service_date)
+        self.assertEquals(len(services), 1, "get_service_details() should return only one service for ID 5")
+
+        # Check servicenumber, should be '12345'
+        self.assertEquals(services[0].servicenumber, '12345')
 
     def test_get_services_details(self):
         services = self.iff.get_services_details([1, 3], self.service_date)
