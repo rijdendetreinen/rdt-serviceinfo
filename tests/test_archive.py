@@ -4,6 +4,7 @@ from _mysql import OperationalError
 import serviceinfo.common as common
 import serviceinfo.archive as archive
 import serviceinfo.data as data
+import serviceinfo.service_store as service_store
 import datetime
 
 import unittest
@@ -14,6 +15,9 @@ class ArchiveTests(unittest.TestCase):
 
     # Service date for all tests:
     service_date = datetime.date(year=2015, month=4, day=1)
+    service_date_str = '2015-04-01'
+
+    store_config = None
 
     def setUp(self):
         config = None
@@ -27,6 +31,8 @@ class ArchiveTests(unittest.TestCase):
                                            config['schedule_store'])
         except OperationalError as e:
             self.fail("Could not connect to archive database: %s" % e)
+
+        self.store_config = config['schedule_store']
 
     def _create_stop_object(self, stop_code, stop_name):
         stop = data.ServiceStop(stop_code)
@@ -179,6 +185,48 @@ class ArchiveTests(unittest.TestCase):
         stop_data = self.archive._process_stop_data(9999, stop, 0)
         self.assertEqual(stop_data["arrival_platform"], "7b")
         self.assertEqual(stop_data["departure_platform"], "6b")
+
+    def test_store_archive(self):
+        number = 5555
+        service = data.Service()
+        service.servicenumber = number
+        service.service_id = number
+        service.service_date = self.service_date
+        service.transport_mode = "IC"
+        service.transport_mode_description = "Intercity"
+
+        stop = data.ServiceStop("ut")
+        stop.stop_name = "Utrecht Centraal"
+        stop.departure_time = datetime.datetime(year=2015, month=4, day=1, hour=12, minute=34)
+        stop.scheduled_departure_platform = "5a"
+        stop.actual_departure_platform = "5b"
+        stop.servicenumber = number
+        service.stops.append(stop)
+
+        stop = data.ServiceStop("asd")
+        stop.stop_name = "Amsterdam Centraal"
+        stop.departure_time = datetime.datetime(year=2015, month=4, day=1, hour=13, minute=34)
+        stop.arrival_time = datetime.datetime(year=2015, month=4, day=1, hour=13, minute=37)
+        stop.cancelled_departure = True
+        stop.servicenumber = number
+        service.stops.append(stop)
+
+        stop = data.ServiceStop("rtd")
+        stop.stop_name = "Rotterdam Centraal"
+        stop.arrival_time = datetime.datetime(year=2015, month=4, day=1, hour=14, minute=30)
+        stop.scheduled_arrival_platform = "15b"
+        stop.actual_arrival_platform = "15b"
+        stop.cancelled_arrival = True
+        stop.servicenumber = number
+        service.stops.append(stop)
+
+        store = service_store.ServiceStore(self.store_config)
+
+        store.store_services([service], store.TYPE_SCHEDULED)
+
+        self.archive.store_archive()
+
+        store.trash_store(self.service_date_str, store.TYPE_SCHEDULED)
 
 if __name__ == '__main__':
     unittest.main()
