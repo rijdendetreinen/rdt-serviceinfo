@@ -133,7 +133,8 @@ INSERT INTO `timetable_service` (`serviceid`, `companynumber`, `servicenumber`, 
 (1,	1,	1234,	'',	1,	5,	'Midnight Express'),
 (2,	1,	5678,	'',	1,	3,	''),
 (3,	1,	0,	'',	1,	2,	''),
-(2,	1,	6678,	'',	3,	5,	'');
+(2,	1,	6678,	'',	3,	5,	''),
+(5,	1,	0,	'12345',	1,	2,	'');
 
 CREATE TABLE `timetable_stop` (
   `serviceid` int(11) NOT NULL DEFAULT '0',
@@ -156,7 +157,9 @@ INSERT INTO `timetable_stop` (`serviceid`, `idx`, `station`, `arrivaltime`, `dep
 (2,	4,	'shl',	'13:35:00',	'13:35:00'),
 (2,	5,	'asd',	'13:45:00',	NULL),
 (3,	1,	'rtd',	NULL,	'12:34:00'),
-(3,	2,	'shl',	NULL,	'13:04:00');
+(3,	2,	'shl',	NULL,	'13:04:00'),
+(5,	1,	'rtd',	NULL,	'12:34:00'),
+(5,	2,	'shl',	NULL,	'13:04:00');
 
 CREATE TABLE `timetable_transport` (
   `serviceid` int(11) NOT NULL,
@@ -185,7 +188,8 @@ CREATE TABLE `timetable_validity` (
 INSERT INTO `timetable_validity` (`serviceid`, `footnote`, `firststop`, `laststop`) VALUES
 (1,	0,	0,	999),
 (3,	0,	0,	999),
-(2,	0,	0,	999);
+(2,	0,	0,	999),
+(5,	0,	0,	999);
 
 CREATE TABLE `timezone` (
   `tznumber` int(11) NOT NULL,
