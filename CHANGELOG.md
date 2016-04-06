@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+
+* Archiver added (to store services to a MySQL archive)
+
 ## 1.0.2
 
 * Fixed: DVS injector crashed on trains with only one stop

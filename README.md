@@ -3,7 +3,7 @@ RDT Serviceinfo
 
 [![GitHub release](https://img.shields.io/github/release/geertw/rdt-serviceinfo.svg)](https://github.com/geertw/rdt-serviceinfo/releases)
 [![Build Status](https://travis-ci.org/geertw/rdt-serviceinfo.svg?branch=master)](https://travis-ci.org/geertw/rdt-serviceinfo)
-[![Coverage Status](https://coveralls.io/repos/geertw/rdt-serviceinfo/badge.svg?branch=master)](https://coveralls.io/r/geertw/rdt-serviceinfo?branch=master)
+[![codecov.io](https://codecov.io/github/geertw/rdt-serviceinfo/coverage.svg?branch=master)](https://codecov.io/github/geertw/rdt-serviceinfo?branch=master)
 [![Code Climate](https://codeclimate.com/github/geertw/rdt-serviceinfo/badges/gpa.svg)](https://codeclimate.com/github/geertw/rdt-serviceinfo)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/geertw/rdt-serviceinfo/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/geertw/rdt-serviceinfo/?branch=master)
 
@@ -19,7 +19,7 @@ RDT Serviceinfo has the following features:
 * Support for complex service types (combined trains)
 
 RDT Serviceinfo can be used as a source for feeding departure boards, to provide
-additional information about train services, and more.
+additional information about train services, to fill historical archives, and more.
 
 Status
 ------
@@ -83,7 +83,7 @@ use some middleware instead called [universal-sub-pubsub](https://github.com/Sti
 License
 -------
 
-Copyright (c) 2015 Geert Wirken
+Copyright (c) 2015-2016 Geert Wirken
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
