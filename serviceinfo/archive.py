@@ -149,12 +149,12 @@ class Archive(object):
             "arrival": stop.arrival_time,
             "arrival_delay": stop.arrival_delay,
             "arrival_cancelled": stop.cancelled_arrival,
-            "arrival_platform": stop.actual_arrival_platform,
+            "arrival_platform": stop.get_arrival_platform(),
             "arrival_platform_scheduled": stop.scheduled_arrival_platform,
             "departure": stop.departure_time,
             "departure_delay": stop.departure_delay,
             "departure_cancelled": stop.cancelled_departure,
-            "departure_platform": stop.actual_departure_platform,
+            "departure_platform": stop.get_departure_platform(),
             "departure_platform_scheduled": stop.scheduled_departure_platform
         }
 

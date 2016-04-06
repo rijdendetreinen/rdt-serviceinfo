@@ -51,7 +51,22 @@ class ServiceTest(unittest.TestCase):
 
         self.assertEquals(repr(stop), "<ServiceStop @ ut>")
 
-    def test_stop_platform(self):
+    def test_stop_get_arrival_platform(self):
+        stop = data.ServiceStop("ledn")
+
+        stop.scheduled_arrival_platform = None
+        stop.actual_arrival_platform = None
+        self.assertIsNone(stop.get_arrival_platform())
+
+        stop.scheduled_arrival_platform = "9a"
+        stop.actual_arrival_platform = None
+        self.assertEquals(stop.get_arrival_platform(), "9a")
+
+        stop.scheduled_arrival_platform = "9a"
+        stop.actual_arrival_platform = "8a"
+        self.assertEquals(stop.get_arrival_platform(), "8a")
+
+    def test_stop_get_departure_platform(self):
         stop = data.ServiceStop("ledn")
 
         stop.scheduled_departure_platform = None

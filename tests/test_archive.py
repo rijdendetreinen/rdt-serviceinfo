@@ -162,6 +162,24 @@ class ArchiveTests(unittest.TestCase):
         self.assertTrue(stop_data["arrival_cancelled"])
         self.assertFalse(stop_data["departure_cancelled"])
 
+    def test_process_stop_platforms(self):
+        stop = self._create_stop_object("o", "Oss")
+
+        stop.scheduled_arrival_platform = "4a"
+        stop.actual_arrival_platform = None
+        stop.scheduled_departure_platform = "5a"
+        stop.actual_departure_platform = None
+        stop_data = self.archive._process_stop_data(9999, stop, 0)
+
+        self.assertEqual(stop_data["arrival_platform"], "4a")
+        self.assertEqual(stop_data["departure_platform"], "5a")
+
+        stop.actual_departure_platform = "6b"
+        stop.actual_arrival_platform = "7b"
+        stop_data = self.archive._process_stop_data(9999, stop, 0)
+        self.assertEqual(stop_data["arrival_platform"], "7b")
+        self.assertEqual(stop_data["departure_platform"], "6b")
+
 if __name__ == '__main__':
     unittest.main()
 
