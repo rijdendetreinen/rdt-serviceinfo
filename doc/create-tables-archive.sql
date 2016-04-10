@@ -16,6 +16,13 @@ CREATE TABLE `services` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+CREATE TABLE `stations` (
+  `code` varchar(6) NOT NULL,
+  `name` varchar(30) NOT NULL,
+  PRIMARY KEY (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 CREATE TABLE `stops` (
   `service_id` int(10) unsigned NOT NULL,
   `stop_nr` tinyint(3) unsigned NOT NULL,

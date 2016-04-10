@@ -8,7 +8,6 @@ import MySQLdb
 import logging
 
 import serviceinfo.service_store as service_store
-import serviceinfo.common as common
 import serviceinfo.util as util
 
 class Archive(object):
@@ -17,6 +16,8 @@ class Archive(object):
     logger = None
     service_date = None
     store_type = None
+
+    station_cache = set()
 
     def __init__(self, service_date, archive_config, schedule_store_config):
         """
@@ -99,6 +100,8 @@ class Archive(object):
                   %(departure_delay)s, %(departure_cancelled)s, %(departure_platform)s,
                   %(departure_platform_scheduled)s)""", stop_data)
 
+            self.store_station(stop.stop_code, stop.stop_name, cursor)
+
             stop_nr += 1
 
     def _process_service_data(self, service):
@@ -159,3 +162,26 @@ class Archive(object):
         }
 
         return stop_data
+
+    def store_station(self, station_code, station_name, cursor):
+        if station_code in self.station_cache:
+            return
+
+        station_data = {
+            "code": station_code,
+            "name": station_name
+        }
+
+        # Verify whether station already exists:
+        cursor.execute("""
+            SELECT name FROM stations
+            WHERE code = %s;""", [station_code])
+
+        if cursor.rowcount == 0:
+            # Insert stop:
+            cursor.execute("""
+                    INSERT INTO stations
+                      (code, name)
+                    VALUES
+                      (%(code)s, %(name)s)""", station_data)
+        self.station_cache.add(station_code)
