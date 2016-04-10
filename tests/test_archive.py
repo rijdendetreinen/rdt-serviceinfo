@@ -187,42 +187,43 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual(stop_data["departure_platform"], "6b")
 
     def test_store_archive(self):
-        number = 5555
-        service = data.Service()
-        service.servicenumber = number
-        service.service_id = number
-        service.service_date = self.service_date
-        service.transport_mode = "IC"
-        service.transport_mode_description = "Intercity"
-
-        stop = data.ServiceStop("ut")
-        stop.stop_name = "Utrecht Centraal"
-        stop.departure_time = datetime.datetime(year=2015, month=4, day=1, hour=12, minute=34)
-        stop.scheduled_departure_platform = "5a"
-        stop.actual_departure_platform = "5b"
-        stop.servicenumber = number
-        service.stops.append(stop)
-
-        stop = data.ServiceStop("asd")
-        stop.stop_name = "Amsterdam Centraal"
-        stop.departure_time = datetime.datetime(year=2015, month=4, day=1, hour=13, minute=34)
-        stop.arrival_time = datetime.datetime(year=2015, month=4, day=1, hour=13, minute=37)
-        stop.cancelled_departure = True
-        stop.servicenumber = number
-        service.stops.append(stop)
-
-        stop = data.ServiceStop("rtd")
-        stop.stop_name = "Rotterdam Centraal"
-        stop.arrival_time = datetime.datetime(year=2015, month=4, day=1, hour=14, minute=30)
-        stop.scheduled_arrival_platform = "15b"
-        stop.actual_arrival_platform = "15b"
-        stop.cancelled_arrival = True
-        stop.servicenumber = number
-        service.stops.append(stop)
-
+        numbers = [5555, 6666, 7777]
         store = service_store.ServiceStore(self.store_config)
 
-        store.store_services([service], store.TYPE_SCHEDULED)
+        for number in numbers:
+            service = data.Service()
+            service.servicenumber = number
+            service.service_id = number
+            service.service_date = self.service_date
+            service.transport_mode = "IC"
+            service.transport_mode_description = "Intercity"
+
+            stop = data.ServiceStop("ut")
+            stop.stop_name = "Utrecht Centraal"
+            stop.departure_time = datetime.datetime(year=2015, month=4, day=1, hour=12, minute=34)
+            stop.scheduled_departure_platform = "5a"
+            stop.actual_departure_platform = "5b"
+            stop.servicenumber = number
+            service.stops.append(stop)
+
+            stop = data.ServiceStop("asd")
+            stop.stop_name = "Amsterdam Centraal"
+            stop.departure_time = datetime.datetime(year=2015, month=4, day=1, hour=13, minute=34)
+            stop.arrival_time = datetime.datetime(year=2015, month=4, day=1, hour=13, minute=37)
+            stop.cancelled_departure = True
+            stop.servicenumber = number
+            service.stops.append(stop)
+
+            stop = data.ServiceStop("rtd")
+            stop.stop_name = "Rotterdam Centraal"
+            stop.arrival_time = datetime.datetime(year=2015, month=4, day=1, hour=14, minute=30)
+            stop.scheduled_arrival_platform = "15b"
+            stop.actual_arrival_platform = "15b"
+            stop.cancelled_arrival = True
+            stop.servicenumber = number
+            service.stops.append(stop)
+
+            store.store_services([service], store.TYPE_SCHEDULED)
 
         self.archive.store_archive()
 
