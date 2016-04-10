@@ -42,3 +42,10 @@ CREATE TABLE `stops` (
   KEY `stop` (`stop`),
   CONSTRAINT `stops_ibfk_1` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE `transport_modes` (
+  `mode` varchar(4) NOT NULL,
+  `mode_description` varchar(30) NOT NULL,
+  PRIMARY KEY (`mode`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

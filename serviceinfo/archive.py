@@ -18,6 +18,7 @@ class Archive(object):
     store_type = None
 
     station_cache = set()
+    transport_mode_cache = set()
 
     def __init__(self, service_date, archive_config, schedule_store_config):
         """
@@ -83,6 +84,9 @@ class Archive(object):
 
             # Store stops:
             self._store_stops(service_id, service, cursor)
+
+            # Store transportation mode:
+            self.store_transport_mode(service.transport_mode, service.transport_mode_description, cursor)
 
     def _store_stops(self, service_id, service, cursor):
         stop_nr = 0
@@ -164,6 +168,13 @@ class Archive(object):
         return stop_data
 
     def store_station(self, station_code, station_name, cursor):
+        """
+        Store a station to the archive
+        :param station_code: station code
+        :param station_name: station name
+        :param cursor: MySQLdb cursor
+        :return:
+        """
         if station_code in self.station_cache:
             return
 
@@ -185,3 +196,33 @@ class Archive(object):
                     VALUES
                       (%(code)s, %(name)s)""", station_data)
         self.station_cache.add(station_code)
+
+    def store_transport_mode(self, transport_mode_code, transport_mode_description, cursor):
+        """
+        Store a transportation mode to the archive
+        :param transport_mode_code: transport mode code
+        :param transport_mode_description: transport mode description
+        :param cursor: MySQLdb cursor
+        :return:
+        """
+        if transport_mode_code in self.transport_mode_cache:
+            return
+
+        transport_mode_data = {
+            "mode": transport_mode_code,
+            "mode_description": transport_mode_description
+        }
+
+        # Verify whether station already exists:
+        cursor.execute("""
+            SELECT `mode` FROM transport_modes
+            WHERE `mode` = %s;""", [transport_mode_code])
+
+        if cursor.rowcount == 0:
+            # Insert stop:
+            cursor.execute("""
+                    INSERT INTO transport_modes
+                      (`mode`, mode_description)
+                    VALUES
+                      (%(mode)s, %(mode_description)s)""", transport_mode_data)
+        self.transport_mode_cache.add(transport_mode_code)
