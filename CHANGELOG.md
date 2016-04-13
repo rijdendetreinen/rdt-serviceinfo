@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+* Archive database format changed
+* Save station names and transportation modes to archive
+* Better handling for services with multiple service numbers
+
 ## 1.1.0
 
 * Archiver added (to store services to a MySQL archive)
