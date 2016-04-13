@@ -53,7 +53,7 @@ class Archive(object):
 
         for service_id in service_ids:
             service = self._load_service(service_id)
-            self._store_service(service, cursor)
+            self._store_service(service, service_id, cursor)
             number_processed += 1
 
         self.logger.info("Committing")
@@ -68,9 +68,10 @@ class Archive(object):
     def _load_service(self, service_id):
         return self.store.get_service(self.service_date, service_id, self.store_type)
 
-    def _store_service(self, services, cursor):
+    def _store_service(self, services, servicenumber, cursor):
         for service in services:
             service_data = self._process_service_data(service)
+            service_data['service_number'] = servicenumber
 
             cursor.execute("""
                 INSERT INTO services
