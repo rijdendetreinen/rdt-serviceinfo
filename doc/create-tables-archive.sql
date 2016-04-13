@@ -18,7 +18,7 @@ CREATE TABLE `services` (
 
 CREATE TABLE `stations` (
   `code` varchar(6) NOT NULL,
-  `name` varchar(30) NOT NULL,
+  `name` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
