@@ -36,6 +36,10 @@ parser = argparse.ArgumentParser(description='RDT Serviceinfo / HTTP Test Server
 
 parser.add_argument('-c', '--config', dest='configFile', default='config/serviceinfo.yaml',
     action='store', help='Configuration file')
+parser.add_argument('-p', '--port', dest='httpPort', default='8080',
+    action='store', help='Server port')
+parser.add_argument('-b', '--bind', dest='httpBind', default='0.0.0.0',
+    action='store', help='Server address')
 
 args = parser.parse_args()
 
@@ -48,4 +52,4 @@ logger = logging.getLogger(__name__)
 logger.info('HTTP server starting')
 
 bottle.debug(True)
-bottle.run(host='0.0.0.0', port=8080, reloader=True)
+bottle.run(host=args.httpBind, port=int(args.httpPort), reloader=True)
