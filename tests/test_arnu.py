@@ -138,6 +138,18 @@ class ArnuTests(unittest.TestCase):
                 match_servicenumber = "4484"
                 self.assertEqual(stop.servicenumber, match_servicenumber, "Service number should be %s" % match_servicenumber)
 
+    def test_parse_duplicate_ids(self):
+        with open("tests/testdata/duplicate-ids.xml", "r") as content_file:
+            message = content_file.read()
+
+        services = arnu.parse_arnu_message(message, self.iff)
+        self.assertEqual(len(services), 2, "duplicate-ids.xml should return 2 services")
+        self.assertEqual(services[0].get_destination_str(), "asd", "Destination should be 'nm'")
+        self.assertEqual(services[1].get_destination_str(), "asd", "Destination should be 'nm'")
+
+        self.assertEqual(services[0].servicenumber, "2693", "Service number should be 2693")
+        self.assertEqual(services[1].servicenumber, "2693", "Service number should be 2693")
+
     def test_parse_multiple_wings(self):
         with open("tests/testdata/multiple-wings.xml", "r") as content_file:
             message = content_file.read()
