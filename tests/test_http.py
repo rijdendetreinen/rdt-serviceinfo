@@ -136,5 +136,13 @@ class HttpTest(unittest.TestCase):
             self.assertEqual(http_service["transport_mode_description"], service.transport_mode_description)
 
 
+    def test_service_details_iff(self):
+        http_services = http.get_service_details(servicedate="2016-04-01", service_number=1234)
+        http_service = http_services["services"][0]
+
+        self.assertEqual(http_service["service_number"], 1234)
+        self.assertEqual(http_service["service_id"], 1)
+        self.assertEqual(http_service["servicedate"], "2016-04-01")
+
 if __name__ == '__main__':
     unittest.main()
