@@ -12,7 +12,7 @@ import redis
 
 configuration = {}
 
-def setup_logging(application, default_level=logging.INFO, env_key='LOG_CFG'):
+def setup_logging(application, default_level=logging.INFO):
     """
     Setup logging. Uses the configuration loaded earlier.
     """
@@ -25,10 +25,7 @@ def setup_logging(application, default_level=logging.INFO, env_key='LOG_CFG'):
         log_config_file = configuration['logging']['log_config']
 
     path = log_config_file
-    value = os.getenv(env_key, None)
 
-    if value:
-        path = value
     if path != None and os.path.exists(path):
         with open(path, 'r') as config_file:
             log_config = yaml.load(config_file.read())
