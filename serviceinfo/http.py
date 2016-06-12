@@ -6,12 +6,14 @@ HTTP requests and automatic conversion from dicts to JSON.
 """
 
 import bottle
+import isodate
 import json
 from bottle import abort, response, error
 
 import serviceinfo.service_store as service_store
 import serviceinfo.common as common
 import serviceinfo.util as util
+import serviceinfo.iff as iff
 
 @bottle.route('/service/<servicedate>')
 def get_services(servicedate):
@@ -77,10 +79,22 @@ def get_service_details(servicedate, service_number):
     store, store_type = _prepare_lookup()
     services = store.get_service(servicedate, service_number, store_type)
 
-    if services == None:
+    # If service is not found in Redis, look it up in IFF database:
+    if services is None:
+        iff_source = iff.IffSource(common.configuration['iff_database'])
+        servicedate_iso = isodate.isodates.parse_date(servicedate)
+
+        service_id = iff_source.get_service_id_for_service_number(service_number, servicedate_iso)
+
+        # Get services:
+        services = iff_source.get_service_details(service_id, servicedate_iso)
+
+    # Return 404 error when service cannot be found
+    if services is None:
         abort(404, "Service not found")
-    else:
-        return services_to_dict(services)
+
+    # Return parsed dict when service is found
+    return services_to_dict(services)
 
 @error(404)
 def error404(error_object):
