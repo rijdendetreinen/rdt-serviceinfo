@@ -34,10 +34,10 @@ need for a MySQL server (instead solely relying on Redis) and a rewrite of the I
 Installation
 ------------
 
-This software is tested on Debian and Ubuntu Linux.
+This software is tested on Debian and Ubuntu Linux, but it should work on any Linux distribution.
 
-You'll need a MySQL server and a Redis instance (they do not to be installed on the same machine).
-A MySQL database is used to store the complete schedule (called the IFF schedule).
+You'll need a MySQL server and a Redis instance (not necessarily installed on the same machine).
+A MySQL database is used to store the complete schedule (called the IFF dataset).
 The Redis instance is used to lookup today's schedule and to store real-time updates about train services.
 
 To install, run through the following steps:
@@ -52,7 +52,9 @@ To install, run through the following steps:
 0. Create the database and import the IFF dataset by running `iff-loader.py --create_tables`
 0. Load the current schedule by running `scheduler.py`.
 0. Receive status updates by running `arnu-listener.py` (in the background, if working correctly).
-0. Provide an HTTP interface by running `http-server.py` (for testing/debugging) or by configuring access to `http.wsgi` (for production).
+0. Provide an HTTP interface by running `http-server.py` (for testing/debugging usage),
+   or by configuring a WSGI server like [uWSGI](https://github.com/unbit/uwsgi) (for production usage).
+   Set it up to serve `http.wsgi`.
 
 ### Keeping the schedule up-to-date
 
@@ -60,9 +62,9 @@ To install, run through the following steps:
     - `cleanup.py` removes old schedules from your Redis database.
     - `scheduler.py` loads the schedule for today in your Redis database.
 0. Refresh your IFF dataset at least weekly.
-    - Download a new IFF schedule from NDOVloket.
-    - Convert it by running `iff-converter.py`
-    - Load the IFF schedule into MySQL by running `iff-loader.py --truncate_tables`
+    - Make sure the MySQL user in your configuration file has permissions to truncate tables and insert data.
+    - Use the script in `contrib/ndov/new-iff.sh` to download and process IFF datasets from NDOVloket.
+    - The script automatically updates your MySQL database when a new IFF dataset is detected.
 
 ### Access to static and realtime schedules
 
@@ -72,9 +74,9 @@ with [NDOVloket](https://www.ndovloket.nl/).
 
 From NDOVloket, you need:
 
-- The [NS IFF dataset](https://ndovloket.nl/helpdesk/kb/13/), which contains the (static) train schedule for the whole year.  
+- The [NS IFF dataset](https://ndovloket.nl/documentatie.html), which contains the (static) train schedule for the whole year.  
   NDOVloket provides the IFF dataset as a zip file containing all required source files.
-- [AR-NU Ritinfo](https://ndovloket.nl/helpdesk/kb/36/). AR-NU provides you with realtime updates about delayed trains, cancelled trains, etc.  
+- [AR-NU Ritinfo](https://ndovloket.nl/documentatie.html). AR-NU provides you with realtime updates about delayed trains, cancelled trains, etc.  
   NDOVloket provides the AR-NU message feed via ZeroMQ.
 
 It is recommended to not connect directly to NDOVloket's ZeroMQ server, but
