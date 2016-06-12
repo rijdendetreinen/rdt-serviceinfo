@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+
+* HTTP: fallback to IFF database for services not in service store
+* Port and address can now be specified for the HTTP test server
+* Utility script included to download IFF dataset from NDOV
+* Bug fixed: do not include passing stops (IFF converter)
+
 ## 1.1.1
 
 * Archive database format changed
