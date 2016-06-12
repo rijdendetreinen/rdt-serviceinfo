@@ -67,6 +67,35 @@ class IffSource(object):
 
         return service_id
 
+    def get_service_id_for_service_number(self, servicenumber, service_date):
+        """
+        Retrieve the service ID for a given servicenumber on a given service_date.
+        This method does not work for variant numbers.
+
+        Args:
+            servicenumber (string): Service number
+            service_date (datetime.date): Service date
+
+        Returns:
+            int: Service ID
+        """
+
+        service_id = None
+
+        cursor = self.connection.cursor()
+        cursor.execute("""
+            SELECT DISTINCT ts.serviceid, f.servicedate FROM timetable_service ts
+            JOIN timetable_validity tv ON (ts.serviceid = tv.serviceid)
+            JOIN footnote f ON (tv.footnote = f.footnote)
+            WHERE f.servicedate = %s
+            AND
+            ts.serviceid IN (SELECT serviceid FROM timetable_service WHERE servicenumber = %s);""",
+                       [service_date.strftime('%Y-%m-%d'), servicenumber])
+
+        for row in cursor:
+            service_id = row[0]
+
+        return service_id
 
     def get_service_details(self, service_id, service_date):
         """
