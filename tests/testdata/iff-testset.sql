@@ -67,7 +67,8 @@ CREATE TABLE `footnote` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `footnote` (`footnote`, `servicedate`) VALUES
-(0,	'2015-04-01');
+(0,	'2015-04-01'),
+(15,	'2016-04-01');
 
 CREATE TABLE `station` (
   `shortname` varchar(6) NOT NULL,
@@ -189,7 +190,8 @@ INSERT INTO `timetable_validity` (`serviceid`, `footnote`, `firststop`, `laststo
 (1,	0,	0,	999),
 (3,	0,	0,	999),
 (2,	0,	0,	999),
-(5,	0,	0,	999);
+(5,	0,	0,	999),
+(1,	15,	0,	999);
 
 CREATE TABLE `timezone` (
   `tznumber` int(11) NOT NULL,
