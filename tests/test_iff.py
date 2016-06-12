@@ -10,6 +10,7 @@ class IffDatabaseTests(unittest.TestCase):
 
     # Service date for all tests:
     service_date = datetime.date(year=2015, month=4, day=1)
+    other_service_date = datetime.date(year=2015, month=4, day=2)
 
     def setUp(self):
         config = None
@@ -128,6 +129,15 @@ class IffDatabaseTests(unittest.TestCase):
 
         services = self.iff.get_services_details([999], self.service_date)
         self.assertEquals(len(services), 0, "get_services_details([999]) should return no services")
+
+    def test_get_service_id_for_service_number(self):
+        service_id = self.iff.get_service_id_for_service_number(1234, self.service_date)
+        self.assertIsNotNone(service_id, "get_service_id_for_service_number(1234, %s) should return a service ID" % self.service_date)
+
+        self.assertEquals(service_id, 1)
+
+        service = self.iff.get_service_id_for_service_number(1234, self.other_service_date)
+        self.assertIsNone(service, "get_service_id_for_service_number(1234, %s) should not return a service ID" % self.other_service_date)
 
     def test_get_service_details_nonexisting(self):
         self.assertIsNone(self.iff.get_service_details(9999, self.service_date))
