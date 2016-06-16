@@ -39,7 +39,7 @@ def load_tsv_files():
         logging.info("Truncate tables...")
         for t in tables:
             logging.info("""... %s""" % t)
-            q = 'TRUNCATE TABLE %s' % (t)
+            q = 'DELETE FROM %s' % (t)
             c.execute(q)
         connection.commit()
 
