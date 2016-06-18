@@ -10,10 +10,8 @@ import isodate
 import json
 from bottle import abort, response, error
 
-import serviceinfo.service_store as service_store
-import serviceinfo.common as common
-import serviceinfo.util as util
-import serviceinfo.iff as iff
+from serviceinfo import service_store, common, util, iff, service_filter
+
 
 @bottle.route('/service/<servicedate>')
 def get_services(servicedate):
@@ -27,6 +25,7 @@ def get_services(servicedate):
 
     # Send list:
     return _send_servicenumbers_list(services)
+
 
 def _prepare_lookup():
     """
@@ -52,6 +51,7 @@ def _prepare_lookup():
     # Return service store and store_type as a tuple
     return (store, store_type)
 
+
 def _send_servicenumbers_list(services):
     """
     Send a list of services, sort list when requested.
@@ -70,6 +70,7 @@ def _send_servicenumbers_list(services):
     # Return dict with list of services:
     return {'services': services}
 
+
 @bottle.route('/service/<servicedate>/<service_number>')
 def get_service_details(servicedate, service_number):
     """
@@ -87,19 +88,28 @@ def get_service_details(servicedate, service_number):
         service_id = iff_source.get_service_id_for_service_number(service_number, servicedate_iso)
 
         # Get services:
-        services = iff_source.get_service_details(service_id, servicedate_iso)
+        iff_services = iff_source.get_service_details(service_id, servicedate_iso)
 
-        # Set source to 'iff':
-        if services is not None and len(services) > 0:
-            for service in services:
-                service.source = 'iff'
+        # Found some services in IFF, check whether they can be returned:
+        if iff_services is not None and len(iff_services) > 0:
+            filter_config = common.configuration['scheduler']['filter']
+            services = []
+
+            for iff_service in iff_services:
+                # Set source to 'iff':
+                iff_service.source = 'iff'
+
+                # Check whether these services are allowed:
+                if service_filter.is_service_included(iff_service, filter_config):
+                    services.append(iff_service)
 
     # Return 404 error when service cannot be found
-    if services is None:
+    if services is None or len(services) == 0:
         abort(404, "Service not found")
 
     # Return parsed dict when service is found
     return services_to_dict(services)
+
 
 @error(404)
 def error404(error_object):
@@ -109,6 +119,7 @@ def error404(error_object):
 
     response.content_type = 'application/json'
     return json.dumps({'error': '404', 'message': error_object.body})
+
 
 def services_to_dict(services):
     """
@@ -137,6 +148,7 @@ def services_to_dict(services):
         data['services'].append(service_data)
 
     return data
+
 
 def service_stops_to_dict(stops):
     """

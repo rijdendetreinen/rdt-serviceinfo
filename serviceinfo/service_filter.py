@@ -7,6 +7,7 @@ Module containing methods to filter service objects
 import datetime
 import serviceinfo.util
 
+
 def match_filter(service, service_filter):
     """
     Returns True when the service matches one or more filter conditions.
@@ -50,7 +51,7 @@ def departure_time_window(stop, minutes, check_date=None):
         return False
 
     # Determine reference datetime:
-    if check_date == None:
+    if check_date is None:
         check_date = datetime.datetime.now()
         check_date = serviceinfo.util.get_localized_datetime(check_date)
 
@@ -64,3 +65,30 @@ def departure_time_window(stop, minutes, check_date=None):
         return True
 
     return False
+
+
+def is_service_included(service, filter_config):
+    """
+    Determine whether a service should be included in the service store
+    based on the filter configuration.
+
+    Args:
+        service (serviceinfo.data.Service): service object
+        filter_config (dict): dictionary with filter configuration. Must contain 'include' and 'exclude'
+        check_date (datetime, optional): reference time (default current time)
+
+    Returns:
+        boolean: Returns True when the service should be included.
+    """
+
+    include_service = True
+
+    if serviceinfo.service_filter.match_filter(service, filter_config['exclude']):
+        include_service = False
+
+    if include_service is False:
+        # Check to whether still include this service:
+        if serviceinfo.service_filter.match_filter(service, filter_config['include']):
+            include_service = True
+
+    return include_service
