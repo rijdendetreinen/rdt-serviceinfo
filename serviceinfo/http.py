@@ -89,6 +89,11 @@ def get_service_details(servicedate, service_number):
         # Get services:
         services = iff_source.get_service_details(service_id, servicedate_iso)
 
+        # Set source to 'iff':
+        if services is not None and len(services) > 0:
+            for service in services:
+                service.source = 'iff'
+
     # Return 404 error when service cannot be found
     if services is None:
         abort(404, "Service not found")
