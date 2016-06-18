@@ -30,6 +30,7 @@ import serviceinfo.service_store
 import serviceinfo.service_filter
 import serviceinfo.common
 import serviceinfo.util
+from serviceinfo import service_filter
 
 
 def get_current_servicedate(date='TODAY'):
@@ -95,17 +96,7 @@ def filter_schedule(schedule, filter_config):
     filtered_schedule = []
 
     for service in schedule:
-        exclude_service = False
-
-        if serviceinfo.service_filter.match_filter(service, filter_config['exclude']):
-            exclude_service = True
-
-        if exclude_service:
-            # Check to whether still include this service:
-            if serviceinfo.service_filter.match_filter(service, filter_config['include']):
-                exclude_service = False
-
-        if not exclude_service:
+        if service_filter.is_service_included(service, filter_config):
             filtered_schedule.append(service)
         else:
             logger.debug("Ignoring service %s/%s" % (service.company_code, service.servicenumber))
