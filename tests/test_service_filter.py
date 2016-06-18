@@ -5,6 +5,7 @@ import unittest
 import datetime
 from pytz import timezone
 
+
 class ServiceFilterTest(unittest.TestCase):
     def test_service_filter_company(self):
         service = data.Service()
@@ -17,7 +18,6 @@ class ServiceFilterTest(unittest.TestCase):
 
         self.assertFalse(service_filter.match_filter(service, company_filter_1), "Company/exclusive match")
         self.assertTrue(service_filter.match_filter(service, company_filter_2), "Company/inclusive match")
-
 
     def test_filter_servicenumber(self):
         service = data.Service()
@@ -37,7 +37,6 @@ class ServiceFilterTest(unittest.TestCase):
         service.servicenumber = 'i4123'
         self.assertFalse(service_filter.match_filter(service, number_filter), "Invalid service number should not match")
 
-
     def test_filter_transport_mode(self):
         service = data.Service()
 
@@ -53,6 +52,37 @@ class ServiceFilterTest(unittest.TestCase):
         self.assertTrue(service_filter.match_filter(service, trans_filter), "Service/inclusive match")
         service.transport_mode = ''
         self.assertFalse(service_filter.match_filter(service, trans_filter), "Service/exclusive match")
+
+    def test_filter_is_service_included(self):
+        service = data.Service()
+
+        exclude_filter = {"company": ["utts"]}
+        include_filter = {'transport_mode': ['ic'], 'service': [[2300, 2399]]}
+        filter_config = {"exclude": exclude_filter, "include": include_filter}
+
+        # Test service which does not match the exclude filter (nor the include filter):
+        service.company_code = 'ns'
+        service.transport_mode = 'spr'
+        service.servicenumber = 1234
+        self.assertTrue(service_filter.is_service_included(service, filter_config), "Service should be included")
+
+        # Test service which matches the exclude filter, not the include filter:
+        service.company_code = 'utts'
+        service.transport_mode = 'spr'
+        service.servicenumber = 1234
+        self.assertFalse(service_filter.is_service_included(service, filter_config), "Service should be excluded")
+
+        # Test service which matches the exclude filter, but also the include filter
+        # which means it should be included:
+        service.company_code = 'utts'
+        service.transport_mode = 'ic'
+        service.servicenumber = 1234
+        self.assertTrue(service_filter.is_service_included(service, filter_config), "Service should be included")
+
+        service.company_code = 'utts'
+        service.transport_mode = 'spr'
+        service.servicenumber = 2345
+        self.assertTrue(service_filter.is_service_included(service, filter_config), "Service should be included")
 
 
 class StopFilterTest(unittest.TestCase):
@@ -95,5 +125,5 @@ class StopFilterTest(unittest.TestCase):
         self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop should not match")
 
 
-if __name__ == '__main__': #
+if __name__ == '__main__':
     unittest.main()
