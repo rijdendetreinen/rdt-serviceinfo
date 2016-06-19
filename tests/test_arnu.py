@@ -178,6 +178,21 @@ class ArnuTests(unittest.TestCase):
         for index, stop in enumerate(services[2][0].stops):
             self.assertEqual(stop.servicenumber, "1750", "Service number should be 1750")
 
+    def test_service_action(self):
+        with open("tests/testdata/normal-service.xml", "r") as content_file:
+            message = content_file.read()
+
+        normal_services = arnu.parse_arnu_message(message, self.iff)
+
+        self.assertEqual(normal_services[0][1], "store", "Service should be stored")
+
+        with open("tests/testdata/removed-service.xml", "r") as content_file:
+            message = content_file.read()
+
+        removed_services = arnu.parse_arnu_message(message, self.iff)
+
+        self.assertEqual(removed_services[0][1], "remove", "Service should be removed")
+
 
 if __name__ == '__main__':
     unittest.main()
