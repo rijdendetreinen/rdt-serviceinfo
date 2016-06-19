@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1
+
+* Support for Removed-Service in ARNU
+* IFF fallback: check for service filter in configuration
+* IFF fallback: set 'source' field to 'iff'
+* IFF loader: use DELETE instead of TRUNCATE to prevent locking problems
+
 ## 1.2.0
 
 * HTTP: fallback to IFF database for services not in service store
