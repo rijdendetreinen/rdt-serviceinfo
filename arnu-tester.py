@@ -55,9 +55,9 @@ def load_dummy_messages(filename):
                     logger.warning('Could not process line %s', line_counter)
                 else:
                     msg_counter = msg_counter + 1
-                    for service in services:
+                    for service, action in services:
                         service_counter = service_counter + 1
-                        store.store_service(service, store.TYPE_ACTUAL)
+                        serviceinfo.arnu.process_arnu_service(service, action, store, store.TYPE_ACTUAL)
 
         logger.info('Finished processing %s services from %s ARNU messages' % (service_counter, msg_counter))
     except IOError as e:

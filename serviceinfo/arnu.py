@@ -23,7 +23,8 @@ def parse_arnu_message(message, iff):
         iff (serviceinfo.iff.IffSource): IFF source
 
     Returns:
-        list: List of serviceinfo.data.Service objects
+        list: List of tuples (serviceinfo.data.Service, action)
+              where action is 'store' or 'remove'
     """
 
     # Parse XML:
@@ -47,10 +48,11 @@ def parse_arnu_message(message, iff):
 
         services.extend(parsed_services)
 
-        for parsed_service in parsed_services:
+        for parsed_service, action in parsed_services:
             parsed_service_ids.append(parsed_service.service_id)
 
     return services
+
 
 def _parse_arnu_service(service_info, iff, parsed_service_ids):
     """
@@ -74,6 +76,12 @@ def _parse_arnu_service(service_info, iff, parsed_service_ids):
     company_name = iff.get_company_name(company_code)
     transport_mode = service_info.find('TransportModeCode').text
     transport_mode_description = iff.get_transport_mode(transport_mode)
+    service_type = service_info.attrib['ServiceType']
+
+    if service_type == 'Removed-Service':
+        action = 'remove'
+    else:
+        action = 'store'
 
     # Parse stops:
     stops, service_date, servicenumbers = _parse_stops(service_info.find('StopList').findall('Stop'), iff)
@@ -104,7 +112,7 @@ def _parse_arnu_service(service_info, iff, parsed_service_ids):
         service.stops = stops
         service.cancelled = service_cancelled
 
-        services.append(service)
+        services.append((service, action))
 
     return services
 
@@ -170,3 +178,11 @@ def _parse_stops(arnu_stops, iff):
         stops.append(stop)
 
     return stops, service_date, servicenumbers
+
+
+def process_arnu_service(service, action, store, store_type):
+    if action == 'store':
+        store.store_service(service, store_type)
+    elif action == 'remove':
+        __logger__.debug('Removing service %s' % service)
+        store.delete_service(util.datetime_to_iso(service.service_date), service.servicenumber, store_type)
