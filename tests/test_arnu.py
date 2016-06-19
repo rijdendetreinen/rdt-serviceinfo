@@ -37,11 +37,11 @@ class ArnuTests(unittest.TestCase):
 
             services = arnu.parse_arnu_message(message, self.iff)
             self.assertEqual(len(services), 1, "%s should return 1 service" % testset[0])
-            self.assertEqual(services[0].get_destination_str(), testset[1], "Destination should be '%s' instead of '%s'" % (testset[0], services[0].get_destination_str()))
+            self.assertEqual(services[0][0].get_destination_str(), testset[1], "Destination should be '%s' instead of '%s'" % (testset[0], services[0][0].get_destination_str()))
 
             # Check whether stops zdk, pmw, mr, pmo are diverted:
             must_be_cancelled = testset[2]
-            for stop in services[0].stops:
+            for stop in services[0][0].stops:
                 if stop.stop_code in must_be_cancelled:
                     self.assertTrue(stop.cancelled_arrival, 'Stop %s should have a cancelled arrival' % stop.stop_code)
                 else:
@@ -58,10 +58,10 @@ class ArnuTests(unittest.TestCase):
 
         services = arnu.parse_arnu_message(message, self.iff)
         self.assertEqual(len(services), 1, "cancelled-fully.xml should return 1 service")
-        self.assertEqual(services[0].get_destination_str(), "ehv", "Destination should be 'ehv'")
+        self.assertEqual(services[0][0].get_destination_str(), "ehv", "Destination should be 'ehv'")
 
         # Check whether all stops are cancelled:
-        for index, stop in enumerate(services[0].stops):
+        for index, stop in enumerate(services[0][0].stops):
             if index > 0:
                 self.assertTrue(stop.cancelled_arrival, 'Stop %s should have a cancelled arrival' % stop.stop_code)
             self.assertTrue(stop.cancelled_departure, 'Stop %s should have a cancelled departure' % stop.stop_code)
@@ -93,14 +93,14 @@ class ArnuTests(unittest.TestCase):
         check_services = [services1[0], services2[0], services3[0]]
         must_be_cancelled = [[ 'bd' ], ['shl', 'asd'], ['utg', 'kma']]
 
-        self.assertEqual(check_services[0].servicenumber, "957", "First service in cancelled-partly.xml must be service 957")
-        self.assertEqual(check_services[0].get_destination_str(), "asd", "Destination for train 957 should be 'asd'")
+        self.assertEqual(check_services[0][0].servicenumber, "957", "First service in cancelled-partly.xml must be service 957")
+        self.assertEqual(check_services[0][0].get_destination_str(), "asd", "Destination for train 957 should be 'asd'")
 
-        self.assertEqual(check_services[1].servicenumber, "949", "Service in cancelled-partly2.xml must be service 949")
-        self.assertEqual(check_services[1].get_destination_str(), "asd", "Destination for train 949 should be 'asd'")
+        self.assertEqual(check_services[1][0].servicenumber, "949", "Service in cancelled-partly2.xml must be service 949")
+        self.assertEqual(check_services[1][0].get_destination_str(), "asd", "Destination for train 949 should be 'asd'")
 
         # Check cancelled stops:
-        for index, service in enumerate(check_services):
+        for index, (service, action) in enumerate(check_services):
             prev_departure_cancelled = False
             for stop in service.stops:
                 if stop.stop_code in must_be_cancelled[index] and must_be_cancelled[index].index(stop.stop_code) > 0:
@@ -123,15 +123,15 @@ class ArnuTests(unittest.TestCase):
 
         services = arnu.parse_arnu_message(message, self.iff)
         self.assertEqual(len(services), 2, "multiple-serviceids.xml should return 2 services")
-        self.assertEqual(services[0].get_destination_str(), "nm", "Destination should be 'nm'")
-        self.assertEqual(services[1].get_destination_str(), "nm", "Destination should be 'nm'")
+        self.assertEqual(services[0][0].get_destination_str(), "nm", "Destination should be 'nm'")
+        self.assertEqual(services[1][0].get_destination_str(), "nm", "Destination should be 'nm'")
 
-        self.assertEqual(services[0].servicenumber, "9680", "Service number should be 9680")
-        self.assertEqual(services[1].servicenumber, "4484", "Service number should be 4484")
+        self.assertEqual(services[0][0].servicenumber, "9680", "Service number should be 9680")
+        self.assertEqual(services[1][0].servicenumber, "4484", "Service number should be 4484")
 
         # Check whether all stops are cancelled:
         match_servicenumber = "9680"
-        for index, stop in enumerate(services[0].stops):
+        for index, stop in enumerate(services[0][0].stops):
             if stop.stop_code != 'ht':
                 self.assertEqual(stop.servicenumber, match_servicenumber, "Service number should be %s" % match_servicenumber)
             else:
@@ -144,11 +144,11 @@ class ArnuTests(unittest.TestCase):
 
         services = arnu.parse_arnu_message(message, self.iff)
         self.assertEqual(len(services), 2, "duplicate-ids.xml should return 2 services")
-        self.assertEqual(services[0].get_destination_str(), "asd", "Destination should be 'nm'")
-        self.assertEqual(services[1].get_destination_str(), "asd", "Destination should be 'nm'")
+        self.assertEqual(services[0][0].get_destination_str(), "asd", "Destination should be 'nm'")
+        self.assertEqual(services[1][0].get_destination_str(), "asd", "Destination should be 'nm'")
 
-        self.assertEqual(services[0].servicenumber, "2693", "Service number should be 2693")
-        self.assertEqual(services[1].servicenumber, "2693", "Service number should be 2693")
+        self.assertEqual(services[0][0].servicenumber, "2693", "Service number should be 2693")
+        self.assertEqual(services[1][0].servicenumber, "2693", "Service number should be 2693")
 
     def test_parse_multiple_wings(self):
         with open("tests/testdata/multiple-wings.xml", "r") as content_file:
@@ -156,27 +156,42 @@ class ArnuTests(unittest.TestCase):
 
         services = arnu.parse_arnu_message(message, self.iff)
         self.assertEqual(len(services), 3, "multiple-wings.xml should return 3 services")
-        self.assertEqual(services[0].get_destination_str(), "rtd", "Destination should be 'rtd'")
-        self.assertEqual(services[1].get_destination_str(), "rtd", "Destination should be 'rtd'")
-        self.assertEqual(services[2].get_destination_str(), "gvc", "Destination should be 'gvc'")
+        self.assertEqual(services[0][0].get_destination_str(), "rtd", "Destination should be 'rtd'")
+        self.assertEqual(services[1][0].get_destination_str(), "rtd", "Destination should be 'rtd'")
+        self.assertEqual(services[2][0].get_destination_str(), "gvc", "Destination should be 'gvc'")
 
-        self.assertEqual(services[0].servicenumber, "1750", "Service number should be 1750")
-        self.assertEqual(services[1].servicenumber, "12850", "Service number should be 12850")
-        self.assertEqual(services[2].servicenumber, "1750", "Service number should be 1750")
+        self.assertEqual(services[0][0].servicenumber, "1750", "Service number should be 1750")
+        self.assertEqual(services[1][0].servicenumber, "12850", "Service number should be 12850")
+        self.assertEqual(services[2][0].servicenumber, "1750", "Service number should be 1750")
 
         # Check whether all stops are cancelled:
         rtd_wings = [0, 1]
         for wing_id in rtd_wings:
             match_servicenumber = "1750"
-            for index, stop in enumerate(services[wing_id].stops):
+            for index, stop in enumerate(services[wing_id][0].stops):
                 if stop.stop_code != 'gd':
                     self.assertEqual(stop.servicenumber, match_servicenumber, "Service number should be %s" % match_servicenumber)
                 else:
                     match_servicenumber = "12850"
                     self.assertEqual(stop.servicenumber, match_servicenumber, "Service number should be %s" % match_servicenumber)
 
-        for index, stop in enumerate(services[2].stops):
+        for index, stop in enumerate(services[2][0].stops):
             self.assertEqual(stop.servicenumber, "1750", "Service number should be 1750")
+
+    def test_service_action(self):
+        with open("tests/testdata/normal-service.xml", "r") as content_file:
+            message = content_file.read()
+
+        normal_services = arnu.parse_arnu_message(message, self.iff)
+
+        self.assertEqual(normal_services[0][1], "store", "Service should be stored")
+
+        with open("tests/testdata/removed-service.xml", "r") as content_file:
+            message = content_file.read()
+
+        removed_services = arnu.parse_arnu_message(message, self.iff)
+
+        self.assertEqual(removed_services[0][1], "remove", "Service should be removed")
 
 
 if __name__ == '__main__':

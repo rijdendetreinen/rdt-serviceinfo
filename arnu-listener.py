@@ -98,9 +98,9 @@ class WorkerThread(threading.Thread):
                 # Parse ARNU message:
                 try:
                     services = serviceinfo.arnu.parse_arnu_message(content, self.iff)
-                    for service in services:
-                        self.store.store_service(service, self.store.TYPE_ACTUAL)
+                    for service, action in services:
                         self.logger.debug('New information for service %s', service.service_id)
+                        serviceinfo.arnu.process_arnu_service(service, action, self.store, self.store.TYPE_ACTUAL)
 
                         self.stats.increment_processed_services()
 
