@@ -5,6 +5,8 @@ import unittest
 import datetime
 from pytz import timezone
 
+from serviceinfo import service_store
+
 
 class ServiceFilterTest(unittest.TestCase):
     def test_service_filter_company(self):
@@ -65,6 +67,24 @@ class ServiceFilterTest(unittest.TestCase):
 
         self.assertFalse(service_filter.match_filter(service, stop_filter1), "Stop/exclusive match")
         self.assertTrue(service_filter.match_filter(service, stop_filter2), "Stop/inclusive match")
+
+    def test_filter_store(self):
+        service = data.Service()
+
+        store_filter1 = {'store': 'actual', 'all': True}
+        store_filter2 = {'store': 'any', 'all': True}
+
+        # For this test, the actual service should match (store: actual)
+        service.store_type = service_store.ServiceStore.TYPE_SCHEDULED
+        self.assertFalse(service_filter.match_filter(service, store_filter1), "Service/exclusive match")
+        service.store_type = service_store.ServiceStore.TYPE_ACTUAL
+        self.assertTrue(service_filter.match_filter(service, store_filter1), "Service/inclusive match")
+
+        # For this test, all services should match (store: any)
+        service.store_type = service_store.ServiceStore.TYPE_SCHEDULED
+        self.assertTrue(service_filter.match_filter(service, store_filter2), "Service/inclusive match")
+        service.store_type = service_store.ServiceStore.TYPE_ACTUAL
+        self.assertTrue(service_filter.match_filter(service, store_filter2), "Service/inclusive match")
 
     def test_filter_is_service_included(self):
         service = data.Service()

@@ -13,6 +13,16 @@ def match_filter(service, service_filter):
     Returns True when the service matches one or more filter conditions.
     """
 
+    # 'store' condition must match if it exists with any service for this filter.
+    if 'store' in service_filter:
+        if service_filter['store'] != 'any':
+            if service.store_type != service_filter['store']:
+                return False
+
+    # Wildcard, matches all services (handy in combition with 'store' which is checked first)
+    if 'all' in service_filter and service_filter['all'] is True:
+        return True
+
     if 'company' in service_filter:
         if service.company_code.lower() in (x.lower() for x in service_filter['company']):
             return True
