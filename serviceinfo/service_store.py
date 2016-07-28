@@ -267,6 +267,7 @@ class ServiceStore(object):
         service.transport_mode = service_data['transport_mode']
         service.transport_mode_description = service_data['transport_mode_description']
         service.servicenumber = service_data['servicenumber']
+        service.store_type = service_type
 
         # Get stops:
         stops = json.loads(service_data['stops'])

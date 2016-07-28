@@ -39,10 +39,10 @@ injector:
     injector_server: tcp://127.0.0.1:8140
     window: 70
     selection:
-        service:
+        - service:
             - [20180, 20199]
             - [20200, 20299]
-        transport_mode:
+        - transport_mode:
             - B
             - BNS
             - NSB

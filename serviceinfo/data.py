@@ -21,6 +21,7 @@ class Service(object):
     transport_mode_description = None
     company_code = None
     company_name = None
+    store_type = None
 
     # Used by ServiceStore to specify data source, defaults to None:
     source = None

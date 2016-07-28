@@ -5,6 +5,8 @@ import unittest
 import datetime
 from pytz import timezone
 
+from serviceinfo import service_store
+
 
 class ServiceFilterTest(unittest.TestCase):
     def test_service_filter_company(self):
@@ -53,6 +55,73 @@ class ServiceFilterTest(unittest.TestCase):
         service.transport_mode = ''
         self.assertFalse(service_filter.match_filter(service, trans_filter), "Service/exclusive match")
 
+    def test_filter_stops(self):
+        service = data.Service()
+        service.stops.append(data.ServiceStop("rtd"))
+        service.stops.append(data.ServiceStop("gvc"))
+        service.stops.append(data.ServiceStop("asd"))
+
+        # Test filters:
+        stop_filter1 = {"stop": ["ledn", "shl", "asdz"]}
+        stop_filter2 = {"stop": ["rtd", "shl", "asdz"]}
+
+        self.assertFalse(service_filter.match_filter(service, stop_filter1), "Stop/exclusive match")
+        self.assertTrue(service_filter.match_filter(service, stop_filter2), "Stop/inclusive match")
+
+    def test_filter_store(self):
+        service = data.Service()
+
+        store_filter1 = {'store': 'actual', 'all': True}
+        store_filter2 = {'store': 'any', 'all': True}
+
+        # For this test, the actual service should match (store: actual)
+        service.store_type = service_store.ServiceStore.TYPE_SCHEDULED
+        self.assertFalse(service_filter.match_filter(service, store_filter1), "Service/exclusive match")
+        service.store_type = service_store.ServiceStore.TYPE_ACTUAL
+        self.assertTrue(service_filter.match_filter(service, store_filter1), "Service/inclusive match")
+
+        # For this test, all services should match (store: any)
+        service.store_type = service_store.ServiceStore.TYPE_SCHEDULED
+        self.assertTrue(service_filter.match_filter(service, store_filter2), "Service/inclusive match")
+        service.store_type = service_store.ServiceStore.TYPE_ACTUAL
+        self.assertTrue(service_filter.match_filter(service, store_filter2), "Service/inclusive match")
+
+    def test_empty_filter(self):
+        empty_filter = {}
+
+        service = data.Service()
+        self.assertFalse(service_filter.match_filter(service, empty_filter), "Service/exclusive match")
+
+        service.stops.append(data.ServiceStop("rtd"))
+        service.stops.append(data.ServiceStop("gvc"))
+        service.stops.append(data.ServiceStop("asd"))
+        self.assertFalse(service_filter.match_filter(service, empty_filter), "Service/exclusive match")
+
+        service.servicenumber = "1234"
+        service.transport_mode = 'ICE'
+        self.assertFalse(service_filter.match_filter(service, empty_filter), "Service/exclusive match")
+
+        service.store_type = service_store.ServiceStore.TYPE_SCHEDULED
+        self.assertFalse(service_filter.match_filter(service, empty_filter), "Service/exclusive match")
+
+    def test_any_filter(self):
+        any_filter = {'all': True}
+
+        service = data.Service()
+        self.assertTrue(service_filter.match_filter(service, any_filter), "Service/inclusive match")
+
+        service.stops.append(data.ServiceStop("rtd"))
+        service.stops.append(data.ServiceStop("gvc"))
+        service.stops.append(data.ServiceStop("asd"))
+        self.assertTrue(service_filter.match_filter(service, any_filter), "Service/inclusive match")
+
+        service.servicenumber = "1234"
+        service.transport_mode = 'ICE'
+        self.assertTrue(service_filter.match_filter(service, any_filter), "Service/inclusive match")
+
+        service.store_type = service_store.ServiceStore.TYPE_SCHEDULED
+        self.assertTrue(service_filter.match_filter(service, any_filter), "Service/inclusive match")
+
     def test_filter_is_service_included(self):
         service = data.Service()
 
@@ -85,7 +154,7 @@ class ServiceFilterTest(unittest.TestCase):
         self.assertTrue(service_filter.is_service_included(service, filter_config), "Service should be included")
 
 
-class StopFilterTest(unittest.TestCase):
+class DepartureWindowFilterTest(unittest.TestCase):
     def setUp(self):
         self.timezone = timezone('Europe/Amsterdam')
 
@@ -123,6 +192,20 @@ class StopFilterTest(unittest.TestCase):
         stop.departure_time = self.timezone.localize(stop.departure_time)
 
         self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop should not match")
+
+    def test_time_window_delayed(self):
+        stop = data.ServiceStop("ut")
+        stop.departure_time = datetime.datetime.now() - datetime.timedelta(minutes=1)
+        stop.departure_time = self.timezone.localize(stop.departure_time)
+
+        self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop should not match")
+
+        stop.departure_delay = 2
+        self.assertTrue(service_filter.departure_time_window(stop, 70), "Stop should match")
+
+        stop.departure_delay = 200
+        self.assertTrue(service_filter.departure_time_window(stop, 70), "Stop should match")
+
 
 
 if __name__ == '__main__':
