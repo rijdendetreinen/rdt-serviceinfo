@@ -44,7 +44,13 @@ def get_services(config):
     logging.debug("Found %s services in time window", len(services))
 
     for service in services:
-        if service_filter.match_filter(service, config['injector']['selection']):
+        match = False
+
+        for filter_config in config['injector']['selection']:
+            if service_filter.match_filter(service, filter_config):
+                match = True
+
+        if match is True:
             filtered_services.append(service)
 
     logging.debug("Found %s services eligible for injecting", len(filtered_services))
