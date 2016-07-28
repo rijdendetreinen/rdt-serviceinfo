@@ -101,6 +101,7 @@ class ServiceStoreTests(unittest.TestCase):
 
         retrieved_service = retrieved_services[0]
         self._assert_service_equal(service, retrieved_service)
+        self.assertEqual(retrieved_service.store_type, self.store.TYPE_SCHEDULED)
 
         # Delete service:
         self.store.delete_service(self.service_date_str, "1234", self.store.TYPE_SCHEDULED)
