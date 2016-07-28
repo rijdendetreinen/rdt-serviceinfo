@@ -27,6 +27,8 @@ class InjectionTest(unittest.TestCase):
         stop.departure_time = datetime.datetime(year=2015, month=4, day=1, hour=12, minute=34)
         stop.scheduled_departure_platform = "5a"
         stop.actual_departure_platform = "5b"
+        stop.arrival_delay = 4
+        stop.departure_delay = 5
         service.stops.append(stop)
 
         stop = data.ServiceStop("asd")
@@ -62,6 +64,8 @@ class InjectionTest(unittest.TestCase):
         self.assertEqual(inject["transmode_text"], service.transport_mode_description)
         self.assertEqual(inject["platform"], "5b")
         self.assertEqual(inject["stop_code"], "ut")
+        self.assertEqual(inject["arrival_delay"], 4)
+        self.assertEqual(inject["departure_delay"], 5)
 
     def test_via(self):
         # Test upcoming stops and via route
