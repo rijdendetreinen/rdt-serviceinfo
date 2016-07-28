@@ -86,6 +86,42 @@ class ServiceFilterTest(unittest.TestCase):
         service.store_type = service_store.ServiceStore.TYPE_ACTUAL
         self.assertTrue(service_filter.match_filter(service, store_filter2), "Service/inclusive match")
 
+    def test_empty_filter(self):
+        empty_filter = {}
+
+        service = data.Service()
+        self.assertFalse(service_filter.match_filter(service, empty_filter), "Service/exclusive match")
+
+        service.stops.append(data.ServiceStop("rtd"))
+        service.stops.append(data.ServiceStop("gvc"))
+        service.stops.append(data.ServiceStop("asd"))
+        self.assertFalse(service_filter.match_filter(service, empty_filter), "Service/exclusive match")
+
+        service.servicenumber = "1234"
+        service.transport_mode = 'ICE'
+        self.assertFalse(service_filter.match_filter(service, empty_filter), "Service/exclusive match")
+
+        service.store_type = service_store.ServiceStore.TYPE_SCHEDULED
+        self.assertFalse(service_filter.match_filter(service, empty_filter), "Service/exclusive match")
+
+    def test_any_filter(self):
+        any_filter = {'all': True}
+
+        service = data.Service()
+        self.assertTrue(service_filter.match_filter(service, any_filter), "Service/inclusive match")
+
+        service.stops.append(data.ServiceStop("rtd"))
+        service.stops.append(data.ServiceStop("gvc"))
+        service.stops.append(data.ServiceStop("asd"))
+        self.assertTrue(service_filter.match_filter(service, any_filter), "Service/inclusive match")
+
+        service.servicenumber = "1234"
+        service.transport_mode = 'ICE'
+        self.assertTrue(service_filter.match_filter(service, any_filter), "Service/inclusive match")
+
+        service.store_type = service_store.ServiceStore.TYPE_SCHEDULED
+        self.assertTrue(service_filter.match_filter(service, any_filter), "Service/inclusive match")
+
     def test_filter_is_service_included(self):
         service = data.Service()
 
