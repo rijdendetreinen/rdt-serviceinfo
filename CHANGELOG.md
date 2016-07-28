@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0
+
+* Improved DVS injection support
+* Injections: filter service on store type
+* Injections: filter service on service stop
+* Delays added to DVS injections
+* Support for multiple injection filters
+
 ## 1.2.1
 
 * Support for Removed-Service in ARNU
