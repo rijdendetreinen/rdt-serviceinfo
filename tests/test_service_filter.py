@@ -53,6 +53,19 @@ class ServiceFilterTest(unittest.TestCase):
         service.transport_mode = ''
         self.assertFalse(service_filter.match_filter(service, trans_filter), "Service/exclusive match")
 
+    def test_filter_stops(self):
+        service = data.Service()
+        service.stops.append(data.ServiceStop("rtd"))
+        service.stops.append(data.ServiceStop("gvc"))
+        service.stops.append(data.ServiceStop("asd"))
+
+        # Test filters:
+        stop_filter1 = {"stop": ["ledn", "shl", "asdz"]}
+        stop_filter2 = {"stop": ["rtd", "shl", "asdz"]}
+
+        self.assertFalse(service_filter.match_filter(service, stop_filter1), "Stop/exclusive match")
+        self.assertTrue(service_filter.match_filter(service, stop_filter2), "Stop/inclusive match")
+
     def test_filter_is_service_included(self):
         service = data.Service()
 
@@ -85,7 +98,7 @@ class ServiceFilterTest(unittest.TestCase):
         self.assertTrue(service_filter.is_service_included(service, filter_config), "Service should be included")
 
 
-class StopFilterTest(unittest.TestCase):
+class DepartureWindowFilterTest(unittest.TestCase):
     def setUp(self):
         self.timezone = timezone('Europe/Amsterdam')
 

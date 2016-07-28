@@ -31,6 +31,11 @@ def match_filter(service, service_filter):
         if service.transport_mode.lower() in (x.lower() for x in service_filter['transport_mode']):
             return True
 
+    if 'stop' in service_filter:
+        for stop in service.stops:
+            if stop.stop_code.lower() in (x.lower() for x in service_filter['stop']):
+                return True
+
     return False
 
 
