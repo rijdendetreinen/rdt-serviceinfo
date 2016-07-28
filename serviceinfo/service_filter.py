@@ -61,7 +61,7 @@ def departure_time_window(stop, minutes, check_date=None):
         check_date = serviceinfo.util.get_localized_datetime(check_date)
 
     # Do not match when already departed:
-    if stop.departure_time < check_date:
+    if stop.departure_time + datetime.timedelta(minutes=stop.departure_delay) < check_date:
         return False
 
     check_date = check_date + datetime.timedelta(minutes=minutes)

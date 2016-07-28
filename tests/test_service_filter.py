@@ -137,6 +137,20 @@ class DepartureWindowFilterTest(unittest.TestCase):
 
         self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop should not match")
 
+    def test_time_window_delayed(self):
+        stop = data.ServiceStop("ut")
+        stop.departure_time = datetime.datetime.now() - datetime.timedelta(minutes=1)
+        stop.departure_time = self.timezone.localize(stop.departure_time)
+
+        self.assertFalse(service_filter.departure_time_window(stop, 70), "Stop should not match")
+
+        stop.departure_delay = 2
+        self.assertTrue(service_filter.departure_time_window(stop, 70), "Stop should match")
+
+        stop.departure_delay = 200
+        self.assertTrue(service_filter.departure_time_window(stop, 70), "Stop should match")
+
+
 
 if __name__ == '__main__':
     unittest.main()
