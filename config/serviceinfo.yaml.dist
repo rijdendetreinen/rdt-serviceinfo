@@ -1,52 +1,72 @@
 ---
 iff_database:
-    host: localhost
-    user: user
-    password: pass
-    database: iff
+  database: iff
+  host: localhost
+  password: pass
+  user: user
 schedule_store:
-    host: localhost
-    port: 6379
-    database: 0
+  database: 0
+  host: localhost
+  port: 6379
 archive_database:
-    host: localhost
-    user: user
-    password: pass
-    database: archive
+  database: archive
+  host: localhost
+  password: pass
+  user: user
 arnu_source:
-    socket: tcp://127.0.0.1:12345
+  socket: tcp://127.0.0.1:12345
 logging:
     log_config: config/logging.yaml
 scheduler:
-    filter:
-        exclude:
-            company:
-                - db
-                - nmbs
-                - thalys
-                - est
-        include:
-            service:
-                # NMBS:
-                - [2500, 2599]
-                # DB:
-                - [300, 499]
-                - [20180, 20199]
-                - [20200, 20299]
-                - [11900, 11999]
-                - [11000, 11099]
+  filter:
+    exclude:
+      company:
+        - db
+        - nmbs
+        - thalys
+        - est
+    include:
+      service:
+        -
+          - 2500
+          - 2599
+        -
+          - 300
+          - 499
+        -
+          - 20180
+          - 20199
+        -
+          - 20200
+          - 20299
+        -
+          - 11900
+          - 11999
+        -
+          - 11000
+          - 11099
 injector:
-    injector_server: tcp://127.0.0.1:8140
-    window: 70
-    selection:
-        - service:
-            - [20180, 20199]
-            - [20200, 20299]
-        - transport_mode:
-            - B
-            - BNS
-            - NSB
-            - NSM
-            - NSS
-            - NST
+  injector_server: "tcp://127.0.0.1:8140"
+  window: 70
+  selection:
+    -
+      service:
+        -
+          - 20180
+          - 20199
+        -
+          - 20200
+          - 20299
+    -
+      store: actual
+      transport_mode:
+        - NSS
+        - NSB
+    -
+      store: any
+      transport_mode:
+        - B
+        - BNS
+        - NSM
+        - NST
 ...
