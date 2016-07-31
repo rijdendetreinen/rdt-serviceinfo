@@ -28,8 +28,7 @@ RDT Serviceinfo is used by [Rijden de Treinen.nl](http://www.rijdendetreinen.nl/
 real-time departure information with additional information. It is being used by thousands of
 travellers each day and running in production since July 2015.
 
-The current release of RDT Serviceinfo is stable. Planned improvements include eliminating the
-need for a MySQL server (instead solely relying on Redis) and a rewrite of the IFF importer.
+The current release of RDT Serviceinfo is stable.
 
 Installation
 ------------
