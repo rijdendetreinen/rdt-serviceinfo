@@ -52,6 +52,7 @@ class Injection:
         inject['stops'] = self.upcoming_stops
         inject['arrival_delay'] = self.stop.arrival_delay
         inject['departure_delay'] = self.stop.departure_delay
+        inject['cancelled'] = self.stop.cancelled_departure
 
         return inject
 

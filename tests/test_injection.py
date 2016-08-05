@@ -53,6 +53,7 @@ class InjectionTest(unittest.TestCase):
     def test_dict(self):
         service = self._prepare_service(123)
         stop = service.stops[0]
+        stop.cancelled_departure = True
         inject = injection.Injection(service, stop).as_dict()
 
         self.assertEqual(inject["service_number"], str(service.servicenumber))
@@ -66,6 +67,7 @@ class InjectionTest(unittest.TestCase):
         self.assertEqual(inject["stop_code"], "ut")
         self.assertEqual(inject["arrival_delay"], 4)
         self.assertEqual(inject["departure_delay"], 5)
+        self.assertTrue(inject["cancelled"])
 
     def test_via(self):
         # Test upcoming stops and via route
