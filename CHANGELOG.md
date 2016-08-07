@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1
+
+* Include cancellation status in DVS injections
+
 ## 1.3.0
 
 * Improved DVS injection support
