@@ -13,14 +13,14 @@ else
 	fi;
 fi;
 
-# Haal nieuwe dataset op:
+# Get new dataset:
 wget --quiet http://data.ndovloket.nl/ns/ns-latest.zip -O $BASEDIR/cache/ns-latest.zip
 
-# Vergelijk files:
+# Compare files:
 diff -u $BASEDIR/cache/ns-latest.zip $BASEDIR/cache/ns-old.zip > /dev/null
 
 if [[ $? -ne 0 ]]; then
-	echo "Nieuwe dataset!"
+	echo "New dataset!"
 	rm $BASEDIR/cache/dataset/*
 
 	unzip $BASEDIR/cache/ns-latest.zip -d $BASEDIR/cache/dataset/
@@ -28,6 +28,5 @@ if [[ $? -ne 0 ]]; then
 	$BASEDIR/iff-converter.py --input $BASEDIR/cache/dataset --config $BASEDIR/config/serviceinfo.yaml --output $BASEDIR/cache/iff_parsed
 	$BASEDIR/iff-loader.py --parsed_dir $BASEDIR/cache/iff_parsed --config $BASEDIR/config/serviceinfo.yaml --truncate_tables
 else 
-	echo "Opgehaalde dataset is gelijk"
+	echo "Retrieved data is equal to existing data"
 fi;
-
