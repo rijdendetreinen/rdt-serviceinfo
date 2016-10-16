@@ -51,7 +51,7 @@ CREATE TABLE `delivery` (
 
 CREATE TABLE `footnote` (
   `footnote` int(11) NOT NULL DEFAULT '0',
-  `servicedate` date NOT NULL DEFAULT '0000-00-00',
+  `servicedate` date NOT NULL,
   PRIMARY KEY (`footnote`,`servicedate`),
   KEY `servicedate` (`servicedate`),
   KEY `footnote` (`footnote`)
