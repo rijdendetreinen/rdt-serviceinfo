@@ -3,6 +3,10 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)/../../"
 BASEDIR=`realpath $DIR`
 
+# Check whether base directories exist:
+mkdir -p $BASEDIR/cache/dataset
+mkdir -p $BASEDIR/cache/iff_parsed
+
 if [ -f $BASEDIR/cache/ns-latest.zip ];
 then
 	mv $BASEDIR/cache/ns-latest.zip $BASEDIR/cache/ns-old.zip
