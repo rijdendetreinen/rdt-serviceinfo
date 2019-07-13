@@ -1,3 +1,7 @@
+# This project has been abandonded, switch to [GoTrain](https://github.com/rijdendetreinen/gotrain)
+
+### This project has been abandonded, as AR-NU has been discontinued as a data source by NS. Please switch to [GoTrain](https://github.com/rijdendetreinen/gotrain) for a modern implementation in Go which processes InfoPlus data
+
 RDT Serviceinfo
 ===============
 
